@@ -1,0 +1,19 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLL=true
+  
+  backend:
+    build: ./backend  # It looks here for dockerfiles.
+    ports:
+      - "8000:8000" # FastAPI port
+    volumes:
+      - ./backend:/code
+    environment:
+      - PYTHONUNBUFFERED=1  # For python logs to be in terminal
