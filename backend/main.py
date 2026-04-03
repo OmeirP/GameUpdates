@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import httpx
 from dotenv import load_dotenv
 import os
@@ -18,6 +19,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# Get token
+response = httpx.post("https://id.twitch.tv/oauth2/token", params={
+    "client_id" : client_id,
+    "client_secret" : client_secret,
+    "grant_type" : "client_credentials"
+})
+
+token = response.json()["access_token"]
+
 @app.get("/")
 def read_root():
     return {"Hello": "From FastAPI inside Docker"}
+
+
+    

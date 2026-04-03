@@ -1,8 +1,6 @@
 services:
   frontend:
     build: ./frontend
-    env_file:
-      - .env
     ports:
       - "5173:5173"
     volumes:
@@ -13,6 +11,8 @@ services:
   
   backend:
     build: ./backend  # It looks here for dockerfiles.
+    env_file:
+      - .env
     ports:
       - "8000:8000" # FastAPI port
     volumes:
