@@ -33,6 +33,7 @@ token = response.json()["access_token"]
 
 
 class IGDBGame(BaseModel):
+    id: int
     name: str
     first_release_date: int = None
 
@@ -51,7 +52,7 @@ async def get_upcoming():
         "Authorization": f"Bearer {token}"
     }
     
-    query = f"fields name, first_release_date; limit 20; where first_release_date >= {int(time.time())}; sort first_release_date asc;"
+    query = f"fields id, name, first_release_date; limit 20; where first_release_date >= {int(time.time())}; sort first_release_date asc;"
     
     async with httpx.AsyncClient() as client:
         response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
