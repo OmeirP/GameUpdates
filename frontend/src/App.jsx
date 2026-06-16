@@ -1,22 +1,60 @@
-import { useState } from 'react'
-import "./App.css"
+import { useState, useEffect } from 'react'
+import "./index.css"
 
 const mockGames = [
   { id: 1, name: "Elden Ring", first_release_date: 1645747200 },
   { id: 2, name: "Cyberpunk 2077", first_release_date: 1607558400 }
 ];
 
-function App() {
+const GameRow = ({ heading, endpoint }) => {
+  const [games, setGames] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRowData() {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`http://localhost:8000${endpoint}`);
+
+        if (!response.ok) {
+          throw new Error('HTTP error! Status: ${response.status}');
+        }
+
+        const data = await response.json();
+        setGames(data);
+
+      } catch (error) {
+        console.error(`Failed to fetch ${heading}:`, error);
+      
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchRowData();
+  }, [endpoint, heading])
+
   return (
-    <div 
-      style={{
-        margin: "auto",
-        width: '90vw',
-        paddingTop: '5rem'
-      }}
-    >
-        <h1 class="text-center">Dashboard</h1>
-    </div>
+    <section className = "py-10">
+      <h2>{heading}: {games.length} fetched</h2>
+      <div>
+        {games.map(game => (
+          <p key={game.id}>{game.name}, {game.first_release_date}</p>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+
+function App() {
+
+  return (
+    <main className = "flex-1 p-8"> 
+      <h1 className = "text-center mx-auto w-full max-w-7xl">Dashboard</h1>
+      <GameRow heading="Upcoming Releases" endpoint="/upcoming-releases" />
+    </main>
+    
   );
 }
 
