@@ -34,12 +34,28 @@ const GameRow = ({ heading, endpoint }) => {
     fetchRowData();
   }, [endpoint, heading])
 
-  return (
+  /* return (
     <section className = "py-10">
       <h2>{heading}: {games.length} fetched</h2>
       <div>
         {games.map(game => (
           <p key={game.id}>{game.name}, {game.first_release_date}</p>
+        ))}
+      </div>
+    </section>
+  ) */
+
+  return (
+    <section className="py-10">
+      <h2 className="text-xl font-bold mb-4">{heading}: {games.length} fetched</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-10 gap-8">
+        {games.slice(0,10).map(game => (
+          <div key={game.id} className="bg-slate-900 rounded-lg border-2 border-red-800 text-blue-300">
+            <img className="rounded-t-lg border-2 border-gray-400" src={game.cover_url} />
+            <p>{new Date(game.first_release_date*1000).toLocaleDateString()}</p>
+            <p className="font-semibold">{game.name}</p>
+            
+          </div>
         ))}
       </div>
     </section>
@@ -50,8 +66,8 @@ const GameRow = ({ heading, endpoint }) => {
 function App() {
 
   return (
-    <main className = "flex-1 p-8"> 
-      <h1 className = "text-center mx-auto w-full max-w-7xl">Dashboard</h1>
+    <main className="flex-1 p-8"> 
+      <h1 className="text-center mx-auto w-full max-w-7xl">Dashboard</h1>
       <GameRow heading="Upcoming Releases" endpoint="/upcoming-releases" />
     </main>
     
