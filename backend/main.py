@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 import httpx
 from dotenv import load_dotenv
 import os
@@ -32,10 +32,28 @@ token = response.json()["access_token"]
 
 
 
+class IGDBCover(BaseModel):
+    url: str
+
 class IGDBGame(BaseModel):
     id: int
     name: str
     first_release_date: int = None
+    cover_url: str = None
+    
+    @field_validator("cover_url", mode="before")
+    @classmethod
+    def transform_cover(cls, value):
+        # IGDB gives 'cover': {'id': 123, 'url': '//...'}
+        # 'mode="before"' makes it parse the dict before the type is checked
+        if "url" in value:
+            raw_url = value["url"]
+            
+            if raw_url.startswith("//"):    # // because browsers have the https bit
+                raw_url = f"https:{raw_url}"
+                
+            return raw_url.replace("t_thumb", "t_cover_big")
+        return None
 
 
 
@@ -52,7 +70,7 @@ async def get_upcoming():
         "Authorization": f"Bearer {token}"
     }
     
-    query = f"fields id, name, first_release_date; limit 20; where first_release_date >= {int(time.time())}; sort first_release_date asc;"
+    query = f"fields id, name, first_release_date, cover.url; limit 20; where first_release_date >= {int(time.time())}; sort first_release_date asc;"
     
     async with httpx.AsyncClient() as client:
         response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
@@ -62,5 +80,10 @@ async def get_upcoming():
         raise HTTPException(status_code=response.status_code, detail="IGDB Request Failed")
     
     data = response.json()
-    print(data)
+    
+    
+    for game in data:
+        if "cover" in game:
+            game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
+    
     return [IGDBGame.model_validate(game) for game in data]
