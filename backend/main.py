@@ -4,7 +4,7 @@ from pydantic import BaseModel, field_validator
 import httpx
 from dotenv import load_dotenv
 import os
-import time
+from datetime import datetime
 
 load_dotenv()
 client_id = os.getenv("CLIENT_ID")
@@ -70,7 +70,35 @@ async def get_upcoming():
         "Authorization": f"Bearer {token}"
     }
     
-    query = f"fields id, name, first_release_date, cover.url; limit 20; where first_release_date >= {int(time.time())}; sort first_release_date asc;"
+    query = f"fields id, name, first_release_date, cover.url; limit 20; where first_release_date >= {int(datetime.now().timestamp())}; sort first_release_date asc;"
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
+        
+    
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="IGDB Request Failed")
+    
+    data = response.json()
+    
+    
+    for game in data:
+        if "cover" in game:
+            game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
+    
+    return [IGDBGame.model_validate(game) for game in data]
+
+
+
+@app.get("/top-rated-year")
+async def get_top_rated_year():
+    
+    headers = {
+        "Client-ID": client_id,
+        "Authorization": f"Bearer {token}"
+    }
+    
+    query = f"fields id, name, cover.url; limit 20; where total_rating_count >= 50 & first_release_date >= {int(datetime(datetime.now().year, 1, 1).timestamp())} & first_release_date <= {int(datetime.now().timestamp())}; sort total_rating desc;"
     
     async with httpx.AsyncClient() as client:
         response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
