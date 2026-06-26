@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import "./index.css"
 
 const mockGames = [
@@ -9,6 +9,51 @@ const mockGames = [
 const GameRow = ({ heading, endpoint, showReleaseDate = false }) => {
   const [games, setGames] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const scrollRef = useRef(null); // Like instance variables
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
+
+
+  const handleMouseDown = (e) => {
+    isDown.current = true;
+    e.preventDefault();   // Prevent default browser behaviour like highlighting text and images
+    
+    // Calculate mouse click position relative to the scroll container
+    startX.current = e.pageX - scrollRef.current.offsetLeft;    // e is the mouseDown event. e.pageX is position from browser left edge. scrollRef.current.offsetLeft is distance from left edge of browser and left boundary of GameRow
+    
+    // Save the current horizontal scroll position of the shelf
+    scrollLeft.current = scrollRef.current.scrollLeft;  // current.scrollLeft is pixels alrady scrolled. Saved when click happens for new starting point instead of acting as if no scrolling has happened already.
+  };
+
+
+  const handleMouseLeave = () => {
+    isDown.current = false; // If mouse leaves the container
+  };
+
+
+  const handleMouseUp = () => {
+    isDown.current = false;
+  };
+
+
+  const handleMouseMove = (e) => {
+
+    if (!isDown.current) return;  // Do nothing if mouse isn't down
+    e.preventDefault(); 
+    
+    // Calculate where the mouse currently is inside the container. (the physical space the container takes up on the screen. related to the screen space, not the virtual space)
+    const x = e.pageX - scrollRef.current.offsetLeft;   // like the startX.current in handleMouseDown but for the current mouse position, not the mouseclick event position
+    
+    
+    // Calculate the distance the mouse has moved from the initial click point.
+    const walk = (x - startX.current) * 2;  // Multiplying by 2 or 3 increases scroll speed like a momentum multiplier
+    
+    // Update the HTML element's scroll position
+    scrollRef.current.scrollLeft = scrollLeft.current - walk;
+  };
+    
 
   useEffect(() => {
     async function fetchRowData() {
@@ -61,9 +106,14 @@ const GameRow = ({ heading, endpoint, showReleaseDate = false }) => {
       </h2>
  
       {/* Horizontal scrlling mechanics in this outer container, not in overall section to avoid header also scrolling. scroll-smooth is for smooth transition for button sliding. */}
-      <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent scroll-smooth">
+      <div ref={scrollRef} 
+      onMouseDown={handleMouseDown} // Map mouse events to scroll div. onMouseDown is the event handler listening for a btn press. handleMouseDown is the callback function called when the event happens. 
+      onMouseLeave={handleMouseLeave}
+      onMouseUp={handleMouseUp}
+      onMouseMove={handleMouseMove}
+      className="w-full overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent scroll-smooth cursor-grab active:cursor-grabbing">
         {/* Inner container: Forces elements into a single row. min-w-full makes the minimum still full size in event of not enough games listed.
-        The outer one is the one with the scrollbar because a scrollbar div needs content larger than it.*/}
+        The outer one is the one with the scrollbar because a scrollbar div needs content larger than it. cursor-grab is for open hand, cursor-grabbing is closed fist*/}
         <div className="flex gap-6 pb-4 px-8 w-max min-w-full">
           {games.map(game => (
 
@@ -75,6 +125,7 @@ const GameRow = ({ heading, endpoint, showReleaseDate = false }) => {
                   className="w-full h-full object-cover" 
                   src={game.cover_url} 
                   loading="lazy"
+                  draggable="false"
                 />) : (
                 <div className="w-full h-full flex items-center justify-center text-xs text-slate-500 font-medium p-2 text-center select-none">
                   No Cover Art
@@ -114,7 +165,7 @@ function App() {
     <main className="flex-1 p-8 bg-slate-950"> 
       <h1 className="text-center mx-auto w-full max-w-7xl font-semibold text-3xl text-white">Dashboard</h1>
       <GameRow heading="Upcoming Releases" endpoint="/upcoming-releases" showReleaseDate={true}/>
-      <GameRow heading="Top Rated" endpoint="/top-rated-year" showReleaseDate={true}/>
+      <GameRow heading="Top Rated This Year" endpoint="/top-rated-year" showReleaseDate={true}/>
     </main>
     
   );
