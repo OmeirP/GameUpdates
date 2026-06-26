@@ -70,7 +70,7 @@ async def get_upcoming():
         "Authorization": f"Bearer {token}"
     }
     
-    query = f"fields id, name, first_release_date, cover.url; limit 20; where first_release_date >= {int(datetime.now().timestamp())}; sort first_release_date asc;"
+    query = f"fields id, name, first_release_date, cover.url; limit 50; where first_release_date >= {int(datetime.now().timestamp())}; sort first_release_date asc;"
     
     async with httpx.AsyncClient() as client:
         response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
@@ -98,7 +98,7 @@ async def get_top_rated_year():
         "Authorization": f"Bearer {token}"
     }
     
-    query = f"fields id, name, cover.url; limit 20; where total_rating_count >= 50 & first_release_date >= {int(datetime(datetime.now().year, 1, 1).timestamp())} & first_release_date <= {int(datetime.now().timestamp())}; sort total_rating desc;"
+    query = f"fields id, name, cover.url; limit 30; where total_rating_count >= 50 & first_release_date >= {int(datetime(datetime.now().year, 1, 1).timestamp())} & first_release_date <= {int(datetime.now().timestamp())}; sort total_rating desc;"
     
     async with httpx.AsyncClient() as client:
         response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
