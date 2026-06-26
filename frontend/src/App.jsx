@@ -79,25 +79,7 @@ const GameRow = ({ heading, endpoint, showReleaseDate = false }) => {
     fetchRowData();
   }, [endpoint, heading])
 
-  /**
-  return (
-    <section className="py-10">
-      <h2 className="text-xl font-bold mb-4 text-gray-200">{heading}: {games.length} fetched</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-10 gap-8">
-        {games.slice(0,10).map(game => (
-          <div key={game.id} className="bg-slate-800 rounded-lg border-2 border-gray-800">
-            <img className="rounded-t-lg border-b-2 border-gray-700 w-full aspect-3/4 object-cover bg-slate-900 mb-1" src={game.cover_url} />
-            {game.first_release_date && ( 
-              <p className="font-bold text-indigo-400 mx-2">{new Date(game.first_release_date*1000).toLocaleDateString()}</p>
-            )}
-            <p className="font-semibold text-white mx-2 mb-2">{game.name}</p>
-            
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-  */
+
 
   return (
     <section className="py-6">
@@ -136,7 +118,7 @@ const GameRow = ({ heading, endpoint, showReleaseDate = false }) => {
             <div className="p-3 flex flex-col grow gap-1 justify-between">
               {/* Grow is so text box fills up vertical space. If a card title is bigger than the rest, all will still take up the same height.
               jutsify-between pushes title to top of box and release date to bottom. line-clamp limits title to 2 lines before cutting off with elipses.*/}
-              <p className="font-semibold text-xs sm:text-sm text-white line-clamp-2" title={game.name}> {/* Title is for tooltip on hover for full name */}
+              <p className="font-semibold text-xs sm:text-sm lg:text-base text-white line-clamp-2" title={game.name}> {/* Title is for tooltip on hover for full name */}
                 {game.name}
               </p>
               
