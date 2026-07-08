@@ -31,11 +31,7 @@ response = httpx.post("https://id.twitch.tv/oauth2/token", params={
 token = response.json()["access_token"]
 
 
-
-class IGDBCover(BaseModel):
-    url: str
-
-class IGDBGame(BaseModel):
+class Game(BaseModel):
     id: int
     name: str
     first_release_date: int = None
@@ -86,7 +82,7 @@ async def get_upcoming():
         if "cover" in game:
             game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
     
-    return [IGDBGame.model_validate(game) for game in data]
+    return [Game.model_validate(game) for game in data]
 
 
 
@@ -114,4 +110,4 @@ async def get_top_rated_year():
         if "cover" in game:
             game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
     
-    return [IGDBGame.model_validate(game) for game in data]
+    return [Game.model_validate(game) for game in data]
