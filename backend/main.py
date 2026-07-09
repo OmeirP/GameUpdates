@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, field_validator
+from sqlmodel import SQLModel, Field
+from pydantic import field_validator
 import httpx
 from dotenv import load_dotenv
 import os
@@ -30,12 +31,14 @@ response = httpx.post("https://id.twitch.tv/oauth2/token", params={
 
 token = response.json()["access_token"]
 
-
-class Game(BaseModel):
-    id: int
+# The class maps to a table, an instance maps to a row.
+class Game(SQLModel, table=True):
+    __tablename__ = "games"
+    
+    id: int = Field(primary_key=True)
     name: str
-    first_release_date: int = None
-    cover_url: str = None
+    first_release_date: int | None = None
+    cover_url: str | None = None
     
     @field_validator("cover_url", mode="before")
     @classmethod
