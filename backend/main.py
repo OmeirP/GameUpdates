@@ -7,12 +7,22 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 from datetime import datetime
+from database import init_db
+from contextlib import asynccontextmanager
 
 
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+    print("Shutting down")  # Clear models here?
+
+
+app = FastAPI(lifespan=lifespan)
 
 # allow react server to talk to api
 app.add_middleware(
@@ -116,3 +126,9 @@ async def get_top_rated_year():
             game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
     
     return [Game.model_validate(game) for game in data]
+
+
+
+
+def add_to_list():
+    pass
