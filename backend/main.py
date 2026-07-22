@@ -18,9 +18,25 @@ client_secret = os.getenv("CLIENT_SECRET")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    
+    async with httpx.AsyncClient() as client:
+        auth_response = await client.post("https://id.twitch.tv/oauth2/token", params={
+        "client_id" : client_id,
+        "client_secret" : client_secret,
+        "grant_type" : "client_credentials"
+    })
+    
+    if auth_response.status_code != 200:
+        raise RuntimeError("Failed to obtain twitch auth token.")
+    
+    
+    # "state" of app.state is like a dedicated namespace for users of the fastAPI module to put their stuff
+    app.state.twitch_token = auth_response.json()["access_token"]
+    app.state.client = client
+    
     yield
-    print("Shutting down")  # Clear models here?
-
+    
+    
 
 app = FastAPI(lifespan=lifespan)
 
@@ -33,14 +49,7 @@ app.add_middleware(
 )
 
 
-# Get token, doing it this way is synchronous
-response = httpx.post("https://id.twitch.tv/oauth2/token", params={
-    "client_id" : client_id,
-    "client_secret" : client_secret,
-    "grant_type" : "client_credentials"
-})
 
-token = response.json()["access_token"]
 
 # The class maps to a table, an instance maps to a row.
 class Game(SQLModel, table=True):
@@ -130,5 +139,3 @@ async def get_top_rated_year():
 
 
 
-def add_to_list():
-    pass
