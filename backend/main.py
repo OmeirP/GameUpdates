@@ -1,16 +1,44 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, field_validator
+from sqlmodel import SQLModel, Field
+from pydantic import field_validator
 import httpx
 from dotenv import load_dotenv
+load_dotenv()
 import os
 from datetime import datetime
+from database import init_db
+from contextlib import asynccontextmanager
 
-load_dotenv()
+
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    #await init_db()
+    
+    async with httpx.AsyncClient() as client:
+        auth_response = await client.post("https://id.twitch.tv/oauth2/token", params={
+            "client_id" : client_id,
+            "client_secret" : client_secret,
+            "grant_type" : "client_credentials"
+        })
+    
+        if auth_response.status_code != 200:
+            raise RuntimeError("Failed to obtain twitch auth token.")
+        
+        
+        # "state" of app.state is like a dedicated namespace for users of the fastAPI module to put their stuff
+        app.state.twitch_token = auth_response.json()["access_token"]
+        app.state.http_client = client
+        
+        yield
+    
+    
+
+app = FastAPI(lifespan=lifespan)
 
 # allow react server to talk to api
 app.add_middleware(
@@ -21,93 +49,79 @@ app.add_middleware(
 )
 
 
-# Get token, doing it this way is synchronous
-response = httpx.post("https://id.twitch.tv/oauth2/token", params={
-    "client_id" : client_id,
-    "client_secret" : client_secret,
-    "grant_type" : "client_credentials"
-})
-
-token = response.json()["access_token"]
 
 
-class Game(BaseModel):
-    id: int
+# The class maps to a table, an instance maps to a row.
+class Game(SQLModel, table=True):
+    __tablename__ = "games"
+    
+    id: int = Field(primary_key=True)
     name: str
-    first_release_date: int = None
-    cover_url: str = None
+    first_release_date: int | None = None
+    cover_url: str | None = None
     
     @field_validator("cover_url", mode="before")
     @classmethod
     def transform_cover(cls, value):
         # IGDB gives 'cover': {'id': 123, 'url': '//...'}
+        # Database will probably output string instead of dict if fetching from there, so that's why you check if value is a dict before handling it like a dict.
         # 'mode="before"' makes it parse the dict before the type is checked
-        if "url" in value:
+        if isinstance(value, dict) and "url" in value:
             raw_url = value["url"]
             
             if raw_url.startswith("//"):    # // because browsers have the https bit
                 raw_url = f"https:{raw_url}"
                 
-            return raw_url.replace("t_thumb", "t_cover_big")
-        return None
+            return raw_url.replace("t_thumb", "t_cover_big")    # Returns this when initially fetching from igdb, return line under if fetching from my db.
+        return value    # Don't need to do the url replacement, when the url is first fetched, it's transformed then. Already correct when written to db.
 
 
 
+async def query_igdb(request: Request, query):  # request is a Starlette thing. Wrapper for 'scope'? Maybe Look more into it.
+    
+    headers = {
+        "Client-ID": client_id,
+        "Authorization": f"Bearer {request.app.state.twitch_token}"
+    }
+    
+    response = await request.app.state.http_client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail="IGDB Request Failed")
+    
+    data = response.json()
+    
+    for game in data:
+        if "cover" in game:
+            game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
+
+    return [Game.model_validate(game) for game in data]
+
+
+
+
+# Endpoints
 @app.get("/")
 def read_root():
     return {"Hello": "From FastAPI inside Docker"}
 
 
 @app.get("/upcoming-releases")
-async def get_upcoming():
-    
-    headers = {
-        "Client-ID": client_id,
-        "Authorization": f"Bearer {token}"
-    }
+async def get_upcoming(request: Request):
     
     query = f"fields id, name, first_release_date, cover.url; limit 50; where first_release_date >= {int(datetime.now().timestamp())}; sort first_release_date asc;"
     
-    async with httpx.AsyncClient() as client:
-        response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
-        
-    
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="IGDB Request Failed")
-    
-    data = response.json()
-    
-    
-    for game in data:
-        if "cover" in game:
-            game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
-    
-    return [Game.model_validate(game) for game in data]
+    return await query_igdb(request, query)
+
 
 
 
 @app.get("/top-rated-year")
-async def get_top_rated_year():
-    
-    headers = {
-        "Client-ID": client_id,
-        "Authorization": f"Bearer {token}"
-    }
+async def get_top_rated_year(request: Request):
     
     query = f"fields id, name, cover.url; limit 30; where total_rating_count >= 50 & first_release_date >= {int(datetime(datetime.now().year, 1, 1).timestamp())} & first_release_date <= {int(datetime.now().timestamp())}; sort total_rating desc;"
     
-    async with httpx.AsyncClient() as client:
-        response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
-        
-    
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail="IGDB Request Failed")
-    
-    data = response.json()
-    
-    
-    for game in data:
-        if "cover" in game:
-            game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
-    
-    return [Game.model_validate(game) for game in data]
+    return await query_igdb(request, query)
+
+
+
