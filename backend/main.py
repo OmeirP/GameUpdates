@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import SQLModel, Field
 from pydantic import field_validator
@@ -17,24 +17,24 @@ client_secret = os.getenv("CLIENT_SECRET")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    #await init_db()
     
     async with httpx.AsyncClient() as client:
         auth_response = await client.post("https://id.twitch.tv/oauth2/token", params={
-        "client_id" : client_id,
-        "client_secret" : client_secret,
-        "grant_type" : "client_credentials"
-    })
+            "client_id" : client_id,
+            "client_secret" : client_secret,
+            "grant_type" : "client_credentials"
+        })
     
-    if auth_response.status_code != 200:
-        raise RuntimeError("Failed to obtain twitch auth token.")
-    
-    
-    # "state" of app.state is like a dedicated namespace for users of the fastAPI module to put their stuff
-    app.state.twitch_token = auth_response.json()["access_token"]
-    app.state.client = client
-    
-    yield
+        if auth_response.status_code != 200:
+            raise RuntimeError("Failed to obtain twitch auth token.")
+        
+        
+        # "state" of app.state is like a dedicated namespace for users of the fastAPI module to put their stuff
+        app.state.twitch_token = auth_response.json()["access_token"]
+        app.state.http_client = client
+        
+        yield
     
     
 
@@ -83,17 +83,17 @@ def read_root():
 
 
 @app.get("/upcoming-releases")
-async def get_upcoming():
+async def get_upcoming(request: Request):
     
     headers = {
         "Client-ID": client_id,
-        "Authorization": f"Bearer {token}"
+        "Authorization": f"Bearer {request.app.state.twitch_token}"
     }
     
     query = f"fields id, name, first_release_date, cover.url; limit 50; where first_release_date >= {int(datetime.now().timestamp())}; sort first_release_date asc;"
     
-    async with httpx.AsyncClient() as client:
-        response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
+    
+    response = await request.app.state.http_client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
         
     
     if response.status_code != 200:
@@ -111,17 +111,16 @@ async def get_upcoming():
 
 
 @app.get("/top-rated-year")
-async def get_top_rated_year():
+async def get_top_rated_year(request: Request):
     
     headers = {
         "Client-ID": client_id,
-        "Authorization": f"Bearer {token}"
+        "Authorization": f"Bearer {request.app.state.twitch_token}"
     }
     
     query = f"fields id, name, cover.url; limit 30; where total_rating_count >= 50 & first_release_date >= {int(datetime(datetime.now().year, 1, 1).timestamp())} & first_release_date <= {int(datetime.now().timestamp())}; sort total_rating desc;"
     
-    async with httpx.AsyncClient() as client:
-        response = await client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
+    response = await request.app.state.http_client.post("https://api.igdb.com/v4/games", headers=headers, content=query)
         
     
     if response.status_code != 200:
