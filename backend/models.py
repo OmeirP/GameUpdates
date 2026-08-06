@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel, Field
 from pydantic import field_validator
+from datetime import datetime, timezone
 
 from enum import Enum
 
@@ -21,12 +22,28 @@ class UserGameList(SQLModel, table=True):
     list_type: ListType = Field(primary_key=True)   # 3 fields for composite primary. Need to allow same user/game pair across different list types.
 
 
+    
+class User(SQLModel, table=True):
+    __tablename__ = "users"
+    
+    # int | None means var can be int OR none. But for SQLModel (using Pydantic), the Field(primary_key=True) overrides this because SQLModel makes primary keys need to be NOT NULL.
+    # the default=None bit just supplies the initial value so I don't have to pass an id manually when making the new instance (on the Python side, not the database field itself.)
+    id: int | None = Field(default=None, primary_key=True)
+    username: str = Field(unique=True, index=True)  # Index makes reading faster, insert/update is slower since index needs to be updated when row is modified.
+    email: str = Field(unique=True, index=True)
+    hashed_password: str
+    # default_factory needs to be a function pointer/callable. Not an actual calling of a function. Needs to be given something it can call by itself, not the value of something being called.
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    
+
+
+
 # The class maps to a table, an instance maps to a row.
 class Game(SQLModel, table=True):
     __tablename__ = "games"
     
     id: int = Field(primary_key=True)
-    name: str
+    name: str   # Just because no Field() doesn't mean not a column. Field() is just needed when metadata or specific SQL constraints can't be conveyed on their own (like primary_key)
     first_release_date: int | None = None
     cover_url: str | None = None
     
