@@ -1,6 +1,26 @@
 from sqlmodel import SQLModel, Field
 from pydantic import field_validator
 
+from enum import Enum
+
+
+# Inherit from str as well because plain enum objects don't serialise to json string primitives.
+# Inheriting tells fastapi and pydantic to treat as plain string in http reqs and json reponses apparently
+class ListType(str, Enum):  
+    PLAYED = "played"
+    FAVOURITES = "favourites"
+    BACKLOG = "to_play"
+    WISHLIST = "wishlist"
+
+# Linking table for games and users. Each entry is an entry in a game list.
+class UserGameList(SQLModel, table=True):
+    __tablename__ = "game_list_entries"
+    
+    user_id: int = Field(primary_key=True)
+    game_id: int = Field(foreign_key="games.id", primary_key=True)  # Obv foreign key str relates to the other table
+    list_type: ListType = Field(primary_key=True)   # 3 fields for composite primary. Need to allow same user/game pair across different list types.
+
+
 # The class maps to a table, an instance maps to a row.
 class Game(SQLModel, table=True):
     __tablename__ = "games"
