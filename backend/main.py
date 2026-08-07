@@ -16,7 +16,7 @@ client_secret = os.getenv("CLIENT_SECRET")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    #await init_db()
+    await init_db()
     
     async with httpx.AsyncClient() as client:
         auth_response = await client.post("https://id.twitch.tv/oauth2/token", params={
