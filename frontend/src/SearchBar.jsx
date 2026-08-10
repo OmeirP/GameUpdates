@@ -61,7 +61,7 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
             {/* Input field */}
             <div className="relative">
                 <input type="text"
-                value="{query}"
+                value={query}
 
                 // This handles any event (including non-keystroke ones) because it reads the phsyical state of the DOM node. "Whatever just happened, whats the exact string sitting in this box right now?"
                 // Checking for onKeyDown and getting keystroke input like instead that would cause problems when pasting or using kb shortcuts, autofill/password managers, voice-to-text etc.
