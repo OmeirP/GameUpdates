@@ -58,7 +58,7 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
     return (
         <div ref={searchContainerRef} className="relative w-full max-w-md"> {/* dropdown menu will use absolute. relative element binds to nearest parent with position: relative. Menu anchors under input box */}
 
-            {/* Input Field */}
+            {/* Input field */}
             <div className="relative">
                 <input type="text"
                 value="{query}"
@@ -76,9 +76,40 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
                 )}
             </div>
 
-            {/* Input Field */}
-            
+            {/* Floating dropdown overlay */}
+            {isOpen && (
+                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-slate-800 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50 divide-y divide-slate-800/50">   {  /* Divide is for creating borders between child elements, overflow-auto is scrollbars on overflow */}
+                    {results.length === 0 && !isLoading ? (
+                        <div className="p-4 text-center text-slate-500 text-sm">No games found</div>
+                    ) : (
+                        results.map((game) => (
+                            <div key={game.id}
+                                // justify-between is equal distance between
+                                className="flex items-center justify-between p-3 hover:bg-slate-800/60">
+
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <img
+                                        src={game.cover_url || '/placeholder.png'}
+                                        alt={game.name}
+                                        className="w-10 h-12 object-cover rounded bg-slate-800 shrink-0"   // Won't shrink when there not enough space
+                                    />
+                                    <div className="truncate">
+                                        <p className="text-sm font-semibold text-white truncate">{game.name}</p>
+                                        {game.release_year && ( // !Yikes, might be a little annoying when sorting out the info parsing...     or maybe not idk. Might be ok tbf, we'll see
+                                            <p className="text-xs text-slate-400">{game.release_year}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <button onClick={() => onAddToList(game, 'played')}
+                                    className="ml-2 shrink-0 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white px-3 py-1.5 rounded text-xs font-medium transition">
+                                        Mark as Played
+                                </button>
+                            </div>
+                        ))
+                    )}
+                </div>
             )}
         </div>
-    )
+    );
 }
