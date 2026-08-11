@@ -78,7 +78,7 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
 
             {/* Floating dropdown overlay */}
             {isOpen && (
-                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900 border border-slate-800 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50 divide-y divide-slate-800/50">   {  /* Divide is for creating borders between child elements, overflow-auto is scrollbars on overflow */}
+                <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50 divide-y divide-slate-800/50">   {  /* Divide is for creating borders between child elements, overflow-auto is scrollbars on overflow */}
                     {results.length === 0 && !isLoading ? (
                         <div className="p-4 text-center text-slate-500 text-sm">No games found</div>
                     ) : (
