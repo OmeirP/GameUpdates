@@ -47,8 +47,8 @@ app.add_middleware(
 )
 
 
-
 app.include_router(games.router)    # Mount the router
+
 
 
 # Endpoints

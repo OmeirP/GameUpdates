@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 
-async def query_igdb(request: Request, query):  # request is a Starlette thing. Wrapper for 'scope'? Maybe Look more into it.
+async def query_igdb(request: Request, query):  # request is a Starlette thing. Wrapper for 'scope'? Maybe Look more into it. Needed for client/twitch token stuff
     
     headers = {
         "Client-ID": client_id,
@@ -46,9 +46,8 @@ async def query_igdb(request: Request, query):  # request is a Starlette thing. 
 async def get_upcoming(request: Request):
     
     query = f"fields id, name, first_release_date, cover.url; limit 50; where first_release_date >= {int(datetime.now().timestamp())}; sort first_release_date asc;"
-    
-    return await query_igdb(request, query)
 
+    return await query_igdb(request, query)
 
 
 
@@ -56,5 +55,14 @@ async def get_upcoming(request: Request):
 async def get_top_rated_year(request: Request):
     
     query = f"fields id, name, cover.url; limit 30; where total_rating_count >= 50 & first_release_date >= {int(datetime(datetime.now().year, 1, 1).timestamp())} & first_release_date <= {int(datetime.now().timestamp())}; sort total_rating desc;"
+    
+    return await query_igdb(request, query)
+
+
+# igdb search
+@router.get("/search")
+async def search_games(request: Request, q: str):
+    
+    query = f"search \"{q}\"; fields id, name, cover.url; limit 25;"
     
     return await query_igdb(request, query)
