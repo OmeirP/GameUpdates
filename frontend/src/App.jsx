@@ -14,7 +14,7 @@ const mockGames = [
 function App() {
   
   const handleAddToList = (game, listType) => {
-    console.log(`Adding ${game.name} to lisy: ${listType}`);
+    console.log(`Adding ${game.name} to list: ${listType}`);
   }
 
   return (
@@ -24,8 +24,8 @@ function App() {
         <SearchBar onAddToList={handleAddToList} />
       </header>
 
-      <GameRow heading="Upcoming Releases" endpoint="/upcoming-releases" showReleaseDate={true}/>
-      <GameRow heading="Top Rated This Year" endpoint="/top-rated-year" showReleaseDate={true}/>
+      <GameRow heading="Upcoming Releases" endpoint="/games/upcoming-releases" showReleaseDate={true}/>
+      <GameRow heading="Top Rated This Year" endpoint="/games/top-rated-year" showReleaseDate={true}/>
     </main>
     
   );
