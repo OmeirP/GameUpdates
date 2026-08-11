@@ -20,7 +20,7 @@ function App() {
   return (
     <main className="flex-1 p-8 bg-slate-950 min-h-screen text-white mx-auto"> 
       {/*<h1 className="text-center mx-auto w-full max-w-7xl font-semibold text-3xl text-white">Dashboard</h1>*/}
-      <header className="mb-8 flex justify-cen">
+      <header className="mb-8 flex justify-center">
         <SearchBar onAddToList={handleAddToList} />
       </header>
 
