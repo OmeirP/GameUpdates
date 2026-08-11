@@ -37,7 +37,7 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
         // Set a timer to wait to search after anything is inputted (to prevent excessive api calls while typing)
         const timer = setTimeout(async () => {
             try {
-                const response = await fetch(`http://localhost:8000/search?q=${encodeURIComponent(query)}`) // encodeURIComponent makes strings url safe. spaces into %20 etc
+                const response = await fetch(`http://localhost:8000/games/search?q=${encodeURIComponent(query)}`) // encodeURIComponent makes strings url safe. spaces into %20 etc
                 if (response.ok) {
                     const data = await response.json(); 
                     setResults(data);       // !THIS PART MIGHT CAUSE AN ERROR CONSIDERING POSSIBLE RESULT FORMAT
