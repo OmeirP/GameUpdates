@@ -20,7 +20,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
 
   const toggleMode = () => {
-    setMode(mode = 'login' ? 'signup' : 'login');
+    setMode(mode === 'login' ? 'signup' : 'login');
     setError('');
   };
 
@@ -131,6 +131,24 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           </button>
 
         </form>
+
+        {/* Toggle link thing */}
+        <div className='mt-6 text-center text-xs text-slate-400'>
+          {mode === 'login' ? (
+            <button
+              onClick={toggleMode}
+              className='text-sky-300 hover:underline font-medium'>
+              Create an account
+            </button>
+          ) : (
+            <button
+              onClick={toggleMode}
+              className='text-sky-300 hover:underline font-medium'>
+              Log in
+            </button>
+          )}
+        </div>
+
       </div>
     </div>
   );
