@@ -5,6 +5,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   // useState makes React sync UI with the data, unlike regular js variables
   const [mode, setMode] = useState('login');        // either login or signup 
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -121,6 +122,19 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               className='w-full bg-slate-800 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
             />
           </div>
+
+          { mode === 'signup' &&
+          <div>
+            <label className='block text-xs text-slate-400 mb-1'>Username</label>
+            <input
+              type='username'
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className='w-full bg-slate-800 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
+            />
+          </div>
+          }
 
           <button
             type='submit'
