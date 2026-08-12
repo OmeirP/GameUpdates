@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
@@ -10,6 +10,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
+
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     // For cancelling the default browser refresh when a form is submitted. Full page reloads apparently breaks single page apps like react. 
@@ -46,8 +54,10 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
 
   return (
-    <div className='fixed inset-0 z-55 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4'>
-
+    <div 
+      onClick={handleBackdropClick} 
+      className='fixed inset-0 z-55 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4'
+    >
       {/* modal box */}
       <div className='bg-slate-900 border border-slate-800 w-full max-w-sm rounded-xl p-6 shadow-2xl relative'>
         
