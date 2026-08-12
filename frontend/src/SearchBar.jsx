@@ -68,7 +68,7 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
                 onChange={(e) => setQuery(e.target.value)}  
                 onFocus={() => query.length >= 2 && setIsOpen(true)}
                 placeholder="Search games"
-                className="w-full bg-slate-900 border border-slate-800 text-white px-4 py-2 pl-10 rounded-lg focus:outline-none focus:border-indigo-500 text-sm transition"
+                className="w-full bg-slate-900 border border-slate-800 text-white px-4 py-2 pl-10 rounded-lg focus:outline-none focus:border-sky-700 text-sm transition"
                 />
                 
                 {isLoading && (
