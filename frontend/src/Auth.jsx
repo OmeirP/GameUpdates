@@ -19,6 +19,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   };
 
 
+  const toggleMode = () => {
+    setMode(mode = 'login' ? 'signup' : 'login');
+    setError('');
+  };
+
+
   const handleSubmit = async (e) => {
     // For cancelling the default browser refresh when a form is submitted. Full page reloads apparently breaks single page apps like react. 
     // Submit event still fires but native http navigation step skipped. So we can handle stuff how we want.
