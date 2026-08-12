@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
@@ -36,11 +36,17 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
     const endpoint = mode === 'login' ? '/auth/login' : '/auth/signup';
 
+    // Set payload based on active mode
+    const payload = mode === 'login'
+      ? { email, password }
+      : { email, password, username };
+
+
     try {
       const response = await fetch(`http://localhost:8000${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),    // Sending this is fine because of TLS (HTTPS). So better get that sorted out.
+        body: JSON.stringify(payload),    // Sending this is fine because of TLS (HTTPS). So better get that sorted out.
       });
 
       const data = await response.json();
@@ -112,6 +118,19 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             />
           </div>
 
+          { mode === 'signup' &&
+          <div>
+            <label className='block text-xs text-slate-400 mb-1'>Username</label>
+            <input
+              type='text'
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className='w-full bg-slate-800 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
+            />
+          </div>
+          }
+
           <div>
             <label className='block text-xs text-slate-400 mb-1'>Password</label>
             <input
@@ -122,19 +141,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               className='w-full bg-slate-800 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
             />
           </div>
-
-          { mode === 'signup' &&
-          <div>
-            <label className='block text-xs text-slate-400 mb-1'>Username</label>
-            <input
-              type='username'
-              required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className='w-full bg-slate-800 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
-            />
-          </div>
-          }
 
           <button
             type='submit'
