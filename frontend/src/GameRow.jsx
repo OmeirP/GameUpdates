@@ -122,7 +122,7 @@ export default function GameRow({ heading, endpoint, showReleaseDate = false }) 
               </p>
               
               {showReleaseDate && game.first_release_date && ( 
-                <p className="text-[11px] font-bold text-indigo-400 whitespace-nowrap"> {/* whitespace-nowrap keeps it to one row */}
+                <p className="text-[11px] font-bold text-sky-500 whitespace-nowrap"> {/* whitespace-nowrap keeps it to one row */}
                   {new Date(game.first_release_date * 1000).toLocaleDateString(undefined, {
                     year: 'numeric',
                     month: 'short',
