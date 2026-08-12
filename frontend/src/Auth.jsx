@@ -55,12 +55,13 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         <button 
           onClick={onClose}
           className='absolute top-4 right-4 text-slate-400 hover:text-white transition'>
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          
+          <svg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg' className='w-6 h-6'>
             <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
+              fillRule="evenodd"
+              clipRule="evenodd"
               d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6834 19.0976 18.3166 18.7071 18.7071C18.3166 19.0976 17.6834 19.0976 17.2929 18.7071L12 13.4142L6.70711 18.7071C6.31658 19.0976 5.68342 19.0976 5.29289 18.7071C4.90237 18.3166 4.90237 17.6834 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z"
-              fill="#0F1729"
+              fill="currentColor"
             />
           </svg>
         </button>
@@ -89,7 +90,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className='w-full bg-sky-950 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
+              className='w-full bg-slate-800 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
               placeholder='you@example.com'
             />
           </div>
@@ -100,8 +101,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               type='password'
               required
               value={password}
-              onChange={(e) => setEmail(e.target.value)}
-              className='w-full bg-sky-950 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
+              onChange={(e) => setPassword(e.target.value)}
+              className='w-full bg-slate-800 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
             />
           </div>
 
