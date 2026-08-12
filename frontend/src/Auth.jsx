@@ -66,7 +66,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         </button>
 
         {/* Header */}
-        <div className='mb-6'>
+        <div className='mb-5 border-b-3 border-slate-800 pb-3'>
           <h2 className='text-xl font-bold text-slate-400'>
             {mode === 'login' ? 'Log In' : 'Create Account'}
           </h2>
@@ -79,21 +79,6 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           </div>
         )}
 
-        {/* mode switcher */}
-        <div className='flex border-b border-slate-800 mb-6'>
-
-          {/* Different styling depending on mode */}
-          <button
-            onClick={() => { setMode('login'); setError(''); }}
-            className={`flex-1 py-2 text-sm font-semibold border-b-2 transition ${
-              mode === 'login'
-                ? 'border-indigo-500 text-white'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Log In
-          </button>
-        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className='space-y-4'>
