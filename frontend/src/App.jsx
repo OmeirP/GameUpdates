@@ -16,6 +16,7 @@ function App() {
   const [user, setUser] = useState(null);
 
   const handleAuthSuccess = (userData) => {
+    setUser(userData);
     console.log('Logged in user: ', userData);  //Todo
   }
   

@@ -46,6 +46,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       const response = await fetch(`http://localhost:8000${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',   // Needed for cookies
         body: JSON.stringify(payload),    // Sending this is fine because of TLS (HTTPS). So better get that sorted out.
       });
 
