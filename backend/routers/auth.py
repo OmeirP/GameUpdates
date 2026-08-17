@@ -11,7 +11,7 @@ router = APIRouter(
     tags=["Authentication"]       # For FASTAPI docs. Groups the endpoints under Games
 )
 
-@router.get("/login")
+@router.post("/login")
 async def login(
     reponse: Response,  # Wraps python data structs into json reponses I think
     form_data: OAuth2PasswordRequestForm = Depends(),   # Depends can be empty here because of type inference. Putting OAuth2PasswordRequestForm inside is redundant
@@ -35,6 +35,6 @@ async def login(
     return Token(access_token=access_token, token_type="bearer")
 
 
-@router.get("/signup")
+@router.post("/signup")
 async def signup():
     pass
