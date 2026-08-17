@@ -19,7 +19,7 @@ async def login(
 ):
     
     statement = select(User).where(User.email == credentials.email)
-    user = (await session.exec(statement)).one_or_none()    # session.execf returns an iterable database stream. one_or_none() or first() is needed to get an actual instance. 
+    user = (await session.execute(statement)).scalar_one_or_none()    # session.execf returns an iterable database stream. one_or_none() or first() is needed to get an actual instance. 
     
     if not user or not verify_password(credentials.password, user.hashed_password):
         # HTTPExceptions just tells fastapi to stop running code and send a HTTP response back over with a specific status code and body
