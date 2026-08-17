@@ -24,6 +24,24 @@ function App() {
     console.log(`Adding ${game.name} to list: ${listType}`);
   }
 
+  
+  const handleLogout = async () => {
+    try {
+
+      await fetch('http://localhost:8000/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+    } catch (err) {
+      console.error('Logout request failed:', err);
+
+    } finally {
+      setUser(null);  // Alone, this only updates local react ui state. logout endpoint needed to expire access_token cookie
+      console.log('Logged out user');
+    }
+  };
+
 
   return (
     <main className="flex-1 p-8 bg-slate-950 min-h-screen text-white mx-auto"> 
@@ -43,7 +61,7 @@ function App() {
 
               {/* Logout button if user not null */}
               <button
-                onClick={() => setUser(null)}
+                onClick={handleLogout}   
                 className='text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded transition'
               >
                 Log out

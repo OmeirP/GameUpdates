@@ -95,3 +95,19 @@ async def signup(
         message="Account created successfully",
         user=UserRead.model_validate(db_user)    # user is of type UserRead, db_user is User. Converts User to UserRead. The id is also in the final json output
     )
+    
+    
+    
+
+@router.post("/logout")
+async def logout(response: Response):
+    
+    # identical attributes so (basically) overwrites the first cookie with an identical one with a expiry date of 0 or in the past.
+    response.delete_cookie(
+    key="access_token",
+    httponly=True,
+    secure=True,    
+    samesite="lax"
+    )
+    
+    return {"message": "Logged out successfully"}
