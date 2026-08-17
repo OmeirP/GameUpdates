@@ -33,7 +33,7 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True)
     hashed_password: str
     # default_factory needs to be a function pointer/callable. Not an actual calling of a function. Needs to be given something it can call by itself, not the value of something being called.
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
 
 # Request schema
