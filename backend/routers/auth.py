@@ -77,7 +77,7 @@ async def signup(
         )
         
         
-    access_token = create_access_token(data={"sub": str(user.id)})
+    access_token = create_access_token(data={"sub": str(db_user.id)})
     
     response.set_cookie(
     key="access_token",
