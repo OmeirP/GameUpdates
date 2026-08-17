@@ -24,8 +24,8 @@ def verify_password(plain_pass, hashed_pass):
         return False
     
     
-def create_accesss_token(data):
+def create_access_token(data):
     to_encode = data.copy()     # Will probably contain 
     expire = datetime.now(timezone.utc) + timedelta(weeks=1)    # Expires after 1 week
-    to_encode.udpate({"exp": expire})
+    to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)   # Encode non-sensitive metadata that you want to inspect them in fastapi without accessing the db.
