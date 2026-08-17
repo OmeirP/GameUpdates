@@ -26,7 +26,7 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
-            headers={"WWW_Authenticate" : "Bearer"}     # http standard response header, set of instructions to the client, saying how it should authenticate on next attempt
+            headers={"WWW-Authenticate" : "Bearer"}     # http standard response header, set of instructions to the client, saying how it should authenticate on next attempt
         )
     
     
