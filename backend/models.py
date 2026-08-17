@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field
-from pydantic import field_validator, BaseModel, EmailStr
+from pydantic import field_validator, BaseModel, EmailStr, ConfigDict
 from datetime import datetime, timezone
 
 from enum import Enum
@@ -44,13 +44,21 @@ class UserCreate(BaseModel):
     password: str
 
 
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
 
 # Response schema
 
 # Whitelist safe fields to send back,
 class UserRead(BaseModel):
     id: int
-    email: EmailStr # Why different?
+    email: EmailStr
+    username: str
+    
+    model_config = ConfigDict(from_attributes=True)     # tells pydantic to accept ORM object instances instead of straight dict data i think.
     
 class SignupResponse(BaseModel):
     message: str
