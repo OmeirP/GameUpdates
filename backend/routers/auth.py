@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Response, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError
-from auth import hash_password, verify_password, create_access_token, Token
-from models import User, UserCreate, SignupResponse
+from auth import hash_password, verify_password, create_access_token
+from models import User, UserCreate, UserRead, SignupResponse
 from database import AsyncSession, get_session
 
 
@@ -51,7 +51,7 @@ async def login(
 async def signup(
     user_in: UserCreate,
     response: Response,
-    session: AsyncSession
+    session: AsyncSession = Depends(get_session)
 ):
     db_user = User(
         email=user_in.email,
@@ -91,5 +91,5 @@ async def signup(
     
     return SignupResponse(
         message="Account created successfully",
-        user=db_user    # user is of type UserRead, the id is also in the final json output
+        user=UserRead.model_validate(db_user)    # user is of type UserRead, db_user is User. Converts User to UserRead. The id is also in the final json output
     )
