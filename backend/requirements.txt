@@ -2,3 +2,6 @@ fastapi[standard]
 httpx
 sqlmodel
 asyncpg
+argon2-cffi
+pyjwt
+python-multipart

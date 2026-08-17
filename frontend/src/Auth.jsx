@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   // useState makes React sync UI with the data, unlike regular js variables
   const [mode, setMode] = useState('login');        // either login or signup 
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,6 +20,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   };
 
 
+  const toggleMode = () => {
+    setMode(mode === 'login' ? 'signup' : 'login');
+    setError('');
+  };
+
+
   const handleSubmit = async (e) => {
     // For cancelling the default browser refresh when a form is submitted. Full page reloads apparently breaks single page apps like react. 
     // Submit event still fires but native http navigation step skipped. So we can handle stuff how we want.
@@ -29,11 +36,18 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
     const endpoint = mode === 'login' ? '/auth/login' : '/auth/signup';
 
+    // Set payload based on active mode
+    const payload = mode === 'login'
+      ? { email, password }
+      : { email, password, username };
+
+
     try {
       const response = await fetch(`http://localhost:8000${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),    // Sending this is fine because of TLS (HTTPS). So better get that sorted out.
+        credentials: 'include',   // Needed for cookies
+        body: JSON.stringify(payload),    // Sending this is fine because of TLS (HTTPS). So better get that sorted out.
       });
 
       const data = await response.json();
@@ -42,7 +56,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         throw new Error(data.detail || 'Authentication failed');
       }
 
-      onAuthSuccess(data); // This will be in App.jsx. HTTP-only cookie better than jwt since jwt in localstorage can be accessed by js if theres a xss vulnerability.
+      onAuthSuccess(data); // This will be in App.jsx. HTTP-only cookie better than having jwt in localstorage since jwt can be accessed by js if theres a xss vulnerability.
       onClose();
     } catch (err) {
       setError(err.message);
@@ -105,6 +119,19 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             />
           </div>
 
+          { mode === 'signup' &&
+          <div>
+            <label className='block text-xs text-slate-400 mb-1'>Username</label>
+            <input
+              type='text'
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className='w-full bg-slate-800 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-800'
+            />
+          </div>
+          }
+
           <div>
             <label className='block text-xs text-slate-400 mb-1'>Password</label>
             <input
@@ -125,6 +152,24 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
           </button>
 
         </form>
+
+        {/* Toggle link thing */}
+        <div className='mt-6 text-center text-xs text-slate-400'>
+          {mode === 'login' ? (
+            <button
+              onClick={toggleMode}
+              className='text-sky-300 hover:underline font-medium'>
+              Create an account
+            </button>
+          ) : (
+            <button
+              onClick={toggleMode}
+              className='text-sky-300 hover:underline font-medium'>
+              Log in
+            </button>
+          )}
+        </div>
+
       </div>
     </div>
   );
