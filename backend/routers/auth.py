@@ -38,7 +38,7 @@ async def login(
         key="access_token",
         value=f"Bearer {access_token}",
         httponly=True,  # Blocks js access
-        secure=True,    # Requires HTTPS in production
+        secure=True,    # Requires HTTPS in production. Most browsers see localhost as special secure contexts so they allow secure cookies over http
         samesite="lax", # Helps mitigate csrf attacks
         max_age=60*60*24*7  # a week
     )
