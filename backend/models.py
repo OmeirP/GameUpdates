@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field
-from pydantic import field_validator
+from pydantic import field_validator, BaseModel, EmailStr
 from datetime import datetime, timezone
 
 from enum import Enum
@@ -34,8 +34,27 @@ class User(SQLModel, table=True):
     hashed_password: str
     # default_factory needs to be a function pointer/callable. Not an actual calling of a function. Needs to be given something it can call by itself, not the value of something being called.
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    
 
+
+# Request schema
+# Need this instead of user so users cant inject values like is_admin=true
+class UserCreate(BaseModel):
+    email: EmailStr
+    username: str
+    password: str
+
+
+
+# Response schema
+
+# Whitelist safe fields to send back,
+class UserRead(BaseModel):
+    id: int
+    email: EmailStr # Why different?
+    
+class SignupResponse(BaseModel):
+    message: str
+    user: UserRead
 
 
 # The class maps to a table, an instance maps to a row.
