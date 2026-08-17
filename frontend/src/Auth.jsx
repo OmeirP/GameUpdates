@@ -56,7 +56,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         throw new Error(data.detail || 'Authentication failed');
       }
 
-      onAuthSuccess(data); // This will be in App.jsx. HTTP-only cookie better than jwt since jwt in localstorage can be accessed by js if theres a xss vulnerability.
+      onAuthSuccess(data); // This will be in App.jsx. HTTP-only cookie better than having jwt in localstorage since jwt can be accessed by js if theres a xss vulnerability.
       onClose();
     } catch (err) {
       setError(err.message);
