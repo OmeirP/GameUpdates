@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, HTTPException, status
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError
 from security import hash_password, verify_password, create_access_token
-from models import User, UserCreate, UserRead, LoginRequest, SignupResponse
+from models import User, UserCreate, UserRead, LoginRequest, AuthResponse
 from database import AsyncSession, get_session
 from dependencies import get_current_user, clear_auth_cookie, set_auth_cookie
 
@@ -12,7 +12,7 @@ router = APIRouter(
     tags=["Authentication"]       # For FASTAPI docs. Groups the endpoints under Authentication
 )
 
-@router.post("/login", response_model=UserRead)
+@router.post("/login", response_model=AuthResponse)
 async def login(
     response: Response,  # For modifying reponse metadata like for setting an http-only cookie
     credentials: LoginRequest,
@@ -35,13 +35,15 @@ async def login(
     set_auth_cookie(response=response, token=access_token)
     
     
-    return {"message": "Logged in successfully",        # maybe should also contain basic user metadata - username, etc
-            "user": UserRead.model_validate(user)}  
+    return AuthResponse(
+        message="Logged in successfully",
+        user=UserRead.model_validate(user)
+    )  
 
 
 
 
-@router.post("/signup", response_model=SignupResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/signup", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def signup(
     user_in: UserCreate,
     response: Response,
@@ -72,7 +74,7 @@ async def signup(
     
     set_auth_cookie(response=response, token=access_token)
     
-    return SignupResponse(
+    return AuthResponse(
         message="Account created successfully",
         user=UserRead.model_validate(db_user)    # user is of type UserRead, db_user is User. Converts User to UserRead. The id is also in the final json output
     )
