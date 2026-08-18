@@ -40,7 +40,7 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
                 const response = await fetch(`http://localhost:8000/games/search?q=${encodeURIComponent(query)}`) // encodeURIComponent makes strings url safe. spaces into %20 etc
                 if (response.ok) {
                     const data = await response.json(); 
-                    setResults(data);       // !THIS PART MIGHT CAUSE AN ERROR CONSIDERING POSSIBLE RESULT FORMAT
+                    setResults(data);
                     setIsOpen(true);
                 }
             } catch (err) {
@@ -100,14 +100,14 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex items-center gap-1.5 shrink-0">
                                     <button onClick={() => onAddToList(game, 'played')}
                                         className="ml-2 shrink-0 bg-slate-800 hover:bg-sky-900 text-slate-300 hover:text-white px-3 py-1.5 rounded text-xs font-medium transition">
                                             Mark as Played
                                     </button>
 
                                     <button onClick={() => onAddToList(game, 'custom')}         // TODO, come up with dropdown maybe? For users to pick playlist to add to
-                                        className="ml-2 shrink-0 bg-slate-800 hover:bg-sky-900 text-slate-300 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition">
+                                        className="shrink-0 bg-slate-800 hover:bg-sky-900 text-slate-300 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition">
                                             {/* svg plus icon */}
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
                                                 <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
