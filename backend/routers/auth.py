@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from security import hash_password, verify_password, create_access_token
 from models import User, UserCreate, UserRead, LoginRequest, SignupResponse
 from database import AsyncSession, get_session
-from dependencies import get_current_user
+from dependencies import get_current_user, clear_auth_cookie, set_auth_cookie
 
 
 router = APIRouter(
@@ -66,11 +66,8 @@ async def signup(
     session.add(db_user)
     
     try:
-        # Pushes to the db and marks the commited objects as stale
-        await session.commit() 
-        
-        # Basically refreshes/reselects the data from the db so the db_user metadata is no longer marked as stale 
-        await session.refresh(db_user)  # also, the generated primary key is assigned back to the attribute db_user.id. id goes from None to some number
+        await session.commit()  # Pushes to the db and marks the commited objects as stale
+        await session.refresh(db_user)  # Basically refreshes/reselects the data from the db so the db_user metadata is no longer marked as stale 
         
     except IntegrityError:
         await session.rollback()
@@ -82,15 +79,7 @@ async def signup(
         
     access_token = create_access_token(data={"sub": str(db_user.id)})
     
-    response.set_cookie(
-    key="access_token",
-    value=access_token,
-    httponly=True,  # Blocks js access
-    secure=True,    # Requires HTTPS in production. Most browsers see localhost as special secure contexts so they allow secure cookies over http
-    samesite="lax", # Helps mitigate csrf attacks
-    max_age=60*60*24*7  # a week
-    )
-    
+    set_auth_cookie(response=response, token=access_token)
     
     return SignupResponse(
         message="Account created successfully",
@@ -105,13 +94,5 @@ async def get_me(current_user: User = Depends(get_current_user)):
 
 @router.post("/logout")
 async def logout(response: Response):
-    
-    # identical attributes so (basically) overwrites the first cookie with an identical one with a expiry date of 0 or in the past.
-    response.delete_cookie(
-    key="access_token",
-    httponly=True,
-    secure=True,    
-    samesite="lax"
-    )
-    
+    clear_auth_cookie(response=response)
     return {"message": "Logged out successfully"}
