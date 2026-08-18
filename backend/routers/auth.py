@@ -26,8 +26,7 @@ async def login(
         # HTTPExceptions just tells fastapi to stop running code and send a HTTP response back over with a specific status code and body
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate" : "Bearer"}     # http standard response header, set of instructions to the client, saying how it should authenticate on next attempt
+            detail="Incorrect email or password"
         )
     
     
