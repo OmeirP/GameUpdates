@@ -5,3 +5,4 @@ asyncpg
 argon2-cffi
 pyjwt
 python-multipart
+uuid6
