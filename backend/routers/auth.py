@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, Response, HTTPException, status
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError
-from auth import hash_password, verify_password, create_access_token
+from security import hash_password, verify_password, create_access_token
 from models import User, UserCreate, UserRead, LoginRequest, SignupResponse
 from database import AsyncSession, get_session
+from dependencies import get_current_user
 
 
 router = APIRouter(
@@ -19,7 +20,7 @@ async def login(
 ):
     
     statement = select(User).where(User.email == credentials.email)
-    user = (await session.execute(statement)).scalar_one_or_none()    # session.execf returns an iterable database stream. one_or_none() or first() is needed to get an actual instance. 
+    user = (await session.exec(statement)).one_or_none()    # session.execf returns an iterable database stream. one_or_none() or first() is needed to get an actual instance. 
     
     if not user or not verify_password(credentials.password, user.hashed_password):
         # HTTPExceptions just tells fastapi to stop running code and send a HTTP response back over with a specific status code and body
@@ -96,7 +97,10 @@ async def signup(
         user=UserRead.model_validate(db_user)    # user is of type UserRead, db_user is User. Converts User to UserRead. The id is also in the final json output
     )
     
-    
+
+@router.get("/me", response_model=UserRead)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
     
 
 @router.post("/logout")
