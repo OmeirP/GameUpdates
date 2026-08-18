@@ -1,6 +1,8 @@
 from sqlmodel import SQLModel, Field
 from pydantic import field_validator, BaseModel, EmailStr, ConfigDict
 from datetime import datetime, timezone
+from uuid import UUID
+import uuid6
 
 from enum import Enum
 
@@ -17,7 +19,7 @@ class ListType(str, Enum):
 class UserGameList(SQLModel, table=True):
     __tablename__ = "game_list_entries"
     
-    user_id: int = Field(primary_key=True)
+    user_id: UUID = Field(foreign_key="users.id", primary_key=True)
     game_id: int = Field(foreign_key="games.id", primary_key=True)  # Obv foreign key str relates to the other table
     list_type: ListType = Field(primary_key=True)   # 3 fields for composite primary. Need to allow same user/game pair across different list types.
 
@@ -26,9 +28,9 @@ class UserGameList(SQLModel, table=True):
 class User(SQLModel, table=True):
     __tablename__ = "users"
     
-    # int | None means var can be int OR none. But for SQLModel (using Pydantic), the Field(primary_key=True) overrides this because SQLModel makes primary keys need to be NOT NULL.
+    # UUID | None means var can be int OR none. But for SQLModel (using Pydantic), the Field(primary_key=True) overrides this because SQLModel makes primary keys need to be NOT NULL.
     # the default=None bit just supplies the initial value so I don't have to pass an id manually when making the new instance (on the Python side, not the database field itself.)
-    id: int | None = Field(default=None, primary_key=True)
+    id: UUID | None = Field(default_factory=uuid6.uuid7, primary_key=True)
     username: str = Field(unique=True, index=True)  # Index makes reading faster, insert/update is slower since index needs to be updated when row is modified.
     email: str = Field(unique=True, index=True)
     hashed_password: str
@@ -54,7 +56,7 @@ class LoginRequest(BaseModel):
 
 # Whitelist safe fields to send back,
 class UserRead(BaseModel):
-    id: int
+    id: UUID
     email: EmailStr
     username: str
     
