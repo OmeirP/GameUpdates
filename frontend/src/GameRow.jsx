@@ -83,7 +83,7 @@ export default function GameRow({ heading, endpoint, showReleaseDate = false }) 
   return (
     <section className="py-6">
       <h2 className="text-xl font-bold mb-4 text-gray-200 px-8">
-        {heading} ({games.length})
+        {heading} {isLoading ? '' : `(${games.length})`}
       </h2>
  
       {/* Horizontal scrlling mechanics in this outer container, not in overall section to avoid header also scrolling. scroll-smooth is for smooth transition for button sliding. */}
@@ -93,46 +93,71 @@ export default function GameRow({ heading, endpoint, showReleaseDate = false }) 
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
       className="w-full overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent scroll-smooth cursor-grab active:cursor-grabbing">
+
         {/* Inner container: Forces elements into a single row. min-w-full makes the minimum still full size in event of not enough games listed.
         The outer one is the one with the scrollbar because a scrollbar div needs content larger than it. cursor-grab is for open hand, cursor-grabbing is closed fist*/}
         <div className="flex gap-6 pb-4 px-8 w-max min-w-full">
-          {games.map(game => (
 
-            <div key={game.id} className="w-40 sm:w-[180px] md:w-[190px] xl:w-[200px] shrink-0 bg-slate-800 rounded-lg border border-slate-700 flex flex-col overflow-hidden shadow-md"> {/*The actual card row.
-            flex-col is for vertical layout cards. overflow-hidden is like a layer mask so picture corners don't go over rounded edges of card.*/}
-              <div className="w-full aspect-3/4 bg-slate-950 relative border-b border-slate-700">
-              {game.cover_url ? (
-                <img 
-                  className="w-full h-full object-cover" 
-                  src={game.cover_url} 
-                  loading="lazy"
-                  draggable="false"
-                />) : (
-                <div className="w-full h-full flex items-center justify-center text-xs text-slate-500 font-medium p-2 text-center select-none">
-                  No Cover Art
-                </div> // Image replacement. select-none for not being able to highlight if they click and drag across the row. Swap with ghost rectangle?
-              )}
-            </div>
+          {/* Skeleton game row while loading */}          
+          {isLoading ? (
+            Array.from({ length: 8 }).map((_, index) => (
+              <div 
+                key={index} 
+                className="w-40 sm:w-45 md:w-47.5 xl:w-50 shrink-0 bg-slate-800/80 rounded-lg border border-slate-700/60 flex flex-col overflow-hidden shadow-md animate-pulse"
+              >
+                <div className="w-full aspect-3/4 bg-slate-900/80 border-b border-slate-700/60" />
+                <div className="p-3 flex flex-col grow gap-2 justify-between">
+                  <div className="space-y-1.5">
+                    <div className="h-4 bg-slate-700/70 rounded w-5/6" />
+                    <div className="h-3.5 bg-slate-700/50 rounded w-3/5" />
+                  </div>
+                  {showReleaseDate && (
+                    <div className="h-3 bg-slate-700/40 rounded w-1/2 mt-1" />
+                  )}
+                </div>
+              </div>
+            ))
 
-            <div className="p-3 flex flex-col grow gap-1 justify-between">
-              {/* Grow is so text box fills up vertical space. If a card title is bigger than the rest, all will still take up the same height.
-              jutsify-between pushes title to top of box and release date to bottom. line-clamp limits title to 2 lines before cutting off with elipses.*/}
-              <p className="font-semibold text-xs sm:text-sm lg:text-base text-white line-clamp-2" title={game.name}> {/* Title is for tooltip on hover for full name */}
-                {game.name}
-              </p>
-              
-              {showReleaseDate && game.first_release_date && ( 
-                <p className="text-[11px] font-bold text-indigo-400 whitespace-nowrap"> {/* whitespace-nowrap keeps it to one row */}
-                  {new Date(game.first_release_date * 1000).toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                  })} {/* undefined is for the timezone, so user's web browser settings will be read instead. */}
+          ) : (
+            // Proper game row after loading
+            games.map(game => (
+
+              <div key={game.id} className="w-40 sm:w-45 md:w-47.5 xl:w-50 shrink-0 bg-slate-800 rounded-lg border border-slate-700 flex flex-col overflow-hidden shadow-md"> {/*The actual card row.
+              flex-col is for vertical layout cards. overflow-hidden is like a layer mask so picture corners don't go over rounded edges of card.*/}
+                <div className="w-full aspect-3/4 bg-slate-950 relative border-b border-slate-700">
+                {game.cover_url ? (
+                  <img 
+                    className="w-full h-full object-cover" 
+                    src={game.cover_url} 
+                    loading="lazy"
+                    draggable="false"
+                  />) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-slate-500 font-medium p-2 text-center select-none">
+                    No Cover Art
+                  </div> // Image replacement. select-none for not being able to highlight if they click and drag across the row. Swap with ghost rectangle?
+                )}
+              </div>
+
+              <div className="p-3 flex flex-col grow gap-1 justify-between">
+                {/* Grow is so text box fills up vertical space. If a card title is bigger than the rest, all will still take up the same height.
+                jutsify-between pushes title to top of box and release date to bottom. line-clamp limits title to 2 lines before cutting off with elipses.*/}
+                <p className="font-semibold text-xs sm:text-sm lg:text-base text-white line-clamp-2" title={game.name}> {/* Title is for tooltip on hover for full name */}
+                  {game.name}
                 </p>
-              )}
+                
+                {showReleaseDate && game.first_release_date && ( 
+                  <p className="text-[11px] font-bold text-indigo-400 whitespace-nowrap"> {/* whitespace-nowrap keeps it to one row */}
+                    {new Date(game.first_release_date * 1000).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })} {/* undefined is for the timezone, so user's web browser settings will be read instead. */}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </section>
