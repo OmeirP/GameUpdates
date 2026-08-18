@@ -12,7 +12,7 @@ router = APIRouter(
     tags=["Authentication"]       # For FASTAPI docs. Groups the endpoints under Authentication
 )
 
-@router.post("/login")
+@router.post("/login", response_model=UserRead)
 async def login(
     response: Response,  # For modifying reponse metadata like for setting an http-only cookie
     credentials: LoginRequest,
@@ -20,7 +20,7 @@ async def login(
 ):
     
     statement = select(User).where(User.email == credentials.email)
-    user = (await session.exec(statement)).one_or_none()    # session.execf returns an iterable database stream. one_or_none() or first() is needed to get an actual instance. 
+    user = (await session.exec(statement)).one_or_none()    # session.exec returns an iterable database stream. one_or_none() or first() is needed to get an actual instance. 
     
     if not user or not verify_password(credentials.password, user.hashed_password):
         # HTTPExceptions just tells fastapi to stop running code and send a HTTP response back over with a specific status code and body
@@ -29,19 +29,11 @@ async def login(
             detail="Incorrect email or password"
         )
     
-    
     access_token = create_access_token(data={"sub": str(user.id)}) 
     
-    
     # HTTP-only cookie currently best practice since supply chain attacks target supposedly trusted js assets
-    response.set_cookie(
-        key="access_token",
-        value=access_token,
-        httponly=True,  # Blocks js access
-        secure=True,    # Requires HTTPS in production. Most browsers see localhost as special secure contexts so they allow secure cookies over http
-        samesite="lax", # Helps mitigate csrf attacks
-        max_age=60*60*24*7  # a week
-    )
+    set_auth_cookie(response=response, token=access_token)
+    
     
     return {"message": "Logged in successfully",        # maybe should also contain basic user metadata - username, etc
             "user": UserRead.model_validate(user)}  
