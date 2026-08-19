@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Response, HTTPException, status
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError
 from security import hash_password, verify_password, create_access_token
-from models import User, UserCreate, UserRead, LoginRequest, AuthResponse
+from models import User, UserCreate, UserRead, LoginRequest, AuthResponse, UserList, DEFAULT_LISTS
 from database import AsyncSession, get_session
 from dependencies import get_current_user, clear_auth_cookie, set_auth_cookie
 
@@ -55,12 +55,15 @@ async def signup(
         hashed_password=hash_password(user_in.password)
     )
     
+    session.add(db_user)    # Add user
     
-    session.add(db_user)
+    default_lists = [UserList(user_id=db_user.id, name=list_name, is_default=True) for list_name in DEFAULT_LISTS]   
+    session.add_all(default_lists)
+    
     
     try:
         await session.commit()  # Pushes to the db and marks the commited objects as stale
-        await session.refresh(db_user)  # Basically refreshes/reselects the data from the db so the db_user metadata is no longer marked as stale 
+        await session.refresh(db_user)  # Basically refreshes/reselects the data from the db so the objects' metadata is no longer marked as stale 
         
     except IntegrityError:
         await session.rollback()
