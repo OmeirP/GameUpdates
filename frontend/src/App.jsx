@@ -14,6 +14,31 @@ const mockGames = [
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [isInitialising, setIsInitialising] = useState(true);
+
+
+  useEffect(() => {
+    const rehydrateSession = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/auth/me', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const userData = await response.json(); // Load userData given in response body to be used by js
+          setUser(userData);
+        }
+
+      } catch (err) {
+        console.error('Session rehydration request failed:', err);
+      } finally {
+        setIsInitialising(false);
+      }
+    };
+
+    rehydrateSession();
+  }, []);
 
   const handleAuthSuccess = (userData) => {
     setUser(userData);
@@ -55,26 +80,32 @@ function App() {
         
         {/* User account name/button */}
         <div className='w-32 flex justify-end'>
-          {user ? (
-            <div className='flex items-center gap-3'>
-              <span className='text-sm text-slate-300'>{user.username}</span>
 
-              {/* Logout button if user not null */}
+          {/* Placeholder button first while loading/refreshing session, then switches to either login or logout button */}
+          {isInitialising ? (
+
+            <div className="w-16 h-8 bg-slate-800 animate-pulse rounded" />   // Placeholder button
+          
+          ) : user ? (          // Switches to conditional login or logout button here
+              <div className='flex items-center gap-3'>
+                <span className='text-sm text-slate-300'>{user.username}</span>
+
+                {/* Logout button if user not null */}
+                <button
+                  onClick={handleLogout}   
+                  className='text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded transition shrink-0'
+                >
+                  Log out
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={handleLogout}   
-                className='text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded transition'
+                onClick={() => setIsAuthOpen(true)}
+                className='bg-sky-800 hover:bg-sky-600 text-white text-sm px-2.5 py-1.5 rounded transition shrink-0'
               >
-                Log out
+                Log in
               </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setIsAuthOpen(true)}
-              className='bg-sky-800 hover:bg-sky-600 text-white text-sm px-2.5 py-1.5 rounded transition shrink-0'
-            >
-              Log in
-            </button>
-          )}
+            )}
         </div>
 
       </header>
