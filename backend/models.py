@@ -65,7 +65,7 @@ class Game(SQLModel, table=True):
 class UserList(SQLModel, table=True):
     __tablename__ = "user_lists"
     
-    __table_args__ = [UniqueConstraint("user_id", "name", name="uq_user_list_name")]    # Constraint so the same user can't have multiple lists of the same name
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_user_list_name"),)    # Constraint so the same user can't have multiple lists of the same name. Trailing comma for tuple
     
     id: UUID = Field(default_factory=uuid6.uuid7, primary_key=True)
     user_id: UUID = Field(foreign_key="users.id")   # Do alternative to cascade
