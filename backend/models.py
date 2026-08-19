@@ -16,6 +16,7 @@ class ListType(str, Enum):
     BACKLOG = "to_play"
     WISHLIST = "wishlist"
 
+DEFAULT_LISTS = ["Played", "Favourites", "Backlog", "Wishlist"]
 
     
 class User(SQLModel, table=True):
@@ -60,6 +61,7 @@ class Game(SQLModel, table=True):
 
 
 # Stores user lists
+# Might need to setup up sqlmodel 'Relationship' to automatically handle nested loading for games associated with a list.
 class UserList(SQLModel, table=True):
     __tablename__ = "user_lists"
     
