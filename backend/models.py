@@ -62,7 +62,7 @@ class UserRead(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)     # tells pydantic to accept ORM object instances instead of straight dict data i think.
     
-class SignupResponse(BaseModel):
+class AuthResponse(BaseModel):
     message: str
     user: UserRead
 
