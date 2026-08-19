@@ -1,4 +1,5 @@
 from sqlmodel import SQLModel, Field
+from sqlalchemy import UniqueConstraint
 from pydantic import field_validator, BaseModel, EmailStr, ConfigDict
 from datetime import datetime, timezone
 from uuid import UUID
@@ -14,14 +15,6 @@ class ListType(str, Enum):
     FAVOURITES = "favourites"
     BACKLOG = "to_play"
     WISHLIST = "wishlist"
-
-# Linking table for games and users. Each entry is an entry in a game list.
-class UserGameList(SQLModel, table=True):
-    __tablename__ = "game_list_entries"
-    
-    user_id: UUID = Field(foreign_key="users.id", primary_key=True)
-    game_id: int = Field(foreign_key="games.id", primary_key=True)  # Obv foreign key str relates to the other table
-    list_type: ListType = Field(primary_key=True)   # 3 fields for composite primary. Need to allow same user/game pair across different list types.
 
 
     
@@ -64,6 +57,29 @@ class Game(SQLModel, table=True):
         return value    # Don't need to do the url replacement, when the url is first fetched, it's transformed then. Already correct when written to db.
 
 
+
+
+# Stores user lists
+class UserList(SQLModel, table=True):
+    __tablename__ = "user_lists"
+    
+    __table_args__ = [UniqueConstraint("user_id", "name", name="uq_user_list_name")]    # Constraint so the same user can't have multiple lists of the same name
+    
+    id: UUID = Field(default_factory=uuid6.uuid7, primary_key=True)
+    user_id: UUID = Field(foreign_key="users.id")   # Do alternative to cascade
+    name: str = Field(max_length=100)
+    is_default: bool = Field(default=False) 
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    
+
+
+# Linking table for games and users. Each entry is an entry in a game list. games are linked to lists, not users
+class ListEntry(SQLModel, table=True):
+    __tablename__ = "list_entries"
+    
+    list_id: UUID = Field(foreign_key="user_lists.id", primary_key=True)
+    game_id: int = Field(foreign_key="games.id", primary_key=True, index=True)
+    added_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))    # for list ordering purposes
 
 
 
