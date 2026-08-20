@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import select
+from sqlmodel import select, one
 from sqlalchemy.exc import IntegrityError
+from uuid import UUID
 from models import ListEntry, ListCreate, ListUpdate, ListRead, UserList, User
 from database import AsyncSession, get_session
 from dependencies import get_current_user
@@ -48,3 +49,72 @@ async def get_user_lists(
     result = await session.exec(statement)  # want all of them
     
     return result.all()
+
+
+
+# For getting an individual list from the id
+@router.get("/{list_id}", response_model=ListRead)  # The list_id segment is passed to list_id parameter. Fastapi will halt if invalid uuid
+async def get_user_list(
+    list_id: UUID,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    statement = select(UserList).where(
+        UserList.user_id == current_user.id,
+        UserList.id == list_id
+    )
+    
+    user_list = (await session.exec(statement)).one_or_none()
+    
+    if not user_list:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="List not found"
+        )
+    
+    return user_list
+
+
+@router.patch("/{list_id}") # patch for updating a resource
+async def update_list(
+    list_id: UUID,
+    list_in: ListUpdate,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    
+    statement = select(UserList).where(
+        UserList.user_id == current_user.id,
+        UserList.id == list_id
+    )
+    
+    user_list = (await session.exec(statement)).one_or_none()
+    
+    if not user_list:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="List not found"
+        )
+    
+    if user_list.is_default:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Default lists cannot be renamed"    # * May need to change if ever other changeable data (e.g. covers)
+        )
+    
+    user_list.name = list_in.name   # Changing the object marks it as dirty
+    session.add(user_list)  # technically redundant, should already be tracked.
+    
+    
+    try:
+        await session.commit()
+        await session.refresh(user_list)
+    except:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"You already have a list named '{list_in.name}'"    # unique constraint
+        )
+        
+    return user_list
+    
