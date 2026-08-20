@@ -146,7 +146,7 @@ async def delete_list(
         )
         
     # delete associated list_entries. Bulk command to database engine.
-    # Better doing it like this than selecting all the relevant entries, loading into memory and deleting them
+    # Better doing it like this than selecting all the relevant entries, loading into memory and deleting them. Safe because ListEntries has no child entities
     await session.exec(delete(ListEntry).where(ListEntry.list_id == list_id)) 
         
     await session.delete(user_list)
