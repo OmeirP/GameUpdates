@@ -75,7 +75,7 @@ async def get_user_list(
     return user_list
 
 
-@router.patch("/{list_id}") # patch for updating a resource
+@router.patch("/{list_id}", response_model=ListRead) # patch for updating a resource
 async def update_list(
     list_id: UUID,
     list_in: ListUpdate,
@@ -118,3 +118,41 @@ async def update_list(
         
     return user_list
     
+    
+    
+@router.delete("/{list_id}", status_code=status.HTTP_204_NO_CONTENT)  # if successful, replaces standard http ok code with this one
+async def delete_list(
+    list_id: UUID,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    statement = select(UserList).where(
+        UserList.id == list_id,
+        UserList.user_id == current_user.id
+    )
+    
+    user_list = (await session.exec(statement)).one_or_none()
+    
+    if not user_list:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="List not found"
+        )
+        
+    if user_list.is_default:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Default lists cannot be deleted"
+        )
+        
+    # delete associated list_entries
+    entries_stmt = select(ListEntry).where(ListEntry.list_id == list_id)
+    entries = await session.exec(entries_stmt)
+    
+    for entry in entries:
+        await session.delete(entry)
+        
+    await session.delete(user_list)
+    await session.commit()
+    
+    return
