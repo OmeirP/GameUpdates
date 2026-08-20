@@ -94,6 +94,12 @@ class UserCreate(BaseModel):
     password: str
 
 
+class ListCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+
+class ListUpdate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
@@ -109,6 +115,13 @@ class UserRead(BaseModel):
     username: str
     
     model_config = ConfigDict(from_attributes=True)     # tells pydantic to accept ORM object instances instead of straight dict data i think.
+    
+    
+class ListRead(BaseModel):
+    id: UUID
+    name: str
+    is_default: bool
+    created_at: datetime
     
 class AuthResponse(BaseModel):
     message: str
