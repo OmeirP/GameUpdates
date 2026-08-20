@@ -97,7 +97,8 @@ class UserCreate(BaseModel):
 class ListCreate(BaseModel):
     name: str = Field(min_length=1, max_length=100)
 
-class ListUpdate(BaseModel):
+# * May need to change if ever other changeable data (e.g. covers if you make like albums or collapsable)
+class ListUpdate(BaseModel):    
     name: str = Field(min_length=1, max_length=100)
 
 class LoginRequest(BaseModel):
