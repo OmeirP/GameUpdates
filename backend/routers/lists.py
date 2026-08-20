@@ -109,7 +109,7 @@ async def update_list(
     try:
         await session.commit()
         await session.refresh(user_list)
-    except:
+    except IntegrityError:
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
