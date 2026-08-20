@@ -40,7 +40,7 @@ async def create_list(
 
 
 # This one returns a list of playlists to be able to fetch multiple playlists with one request
-@router.get("", response_model=[ListRead])
+@router.get("", response_model=list[ListRead])
 async def get_user_lists(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
