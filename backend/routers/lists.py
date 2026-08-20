@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import select, one
+from sqlmodel import select, delete
 from sqlalchemy.exc import IntegrityError
 from uuid import UUID
 from models import ListEntry, ListCreate, ListUpdate, ListRead, UserList, User
@@ -145,12 +145,9 @@ async def delete_list(
             detail="Default lists cannot be deleted"
         )
         
-    # delete associated list_entries
-    entries_stmt = select(ListEntry).where(ListEntry.list_id == list_id)
-    entries = await session.exec(entries_stmt)
-    
-    for entry in entries:
-        await session.delete(entry)
+    # delete associated list_entries. Bulk command to database engine.
+    # Better doing it like this than selecting all the relevant entries, loading into memory and deleting them
+    await session.exec(delete(ListEntry).where(ListEntry.list_id == list_id)) 
         
     await session.delete(user_list)
     await session.commit()
