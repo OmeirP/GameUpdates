@@ -101,6 +101,13 @@ class ListCreate(BaseModel):
 class ListUpdate(BaseModel):    
     name: str = Field(min_length=1, max_length=100)
 
+
+class ListEntryRead(BaseModel):
+    list_id: UUID
+    game_id: int
+    added_at: datetime
+
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
