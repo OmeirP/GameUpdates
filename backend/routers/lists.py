@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import select, delete
 from sqlalchemy.exc import IntegrityError
 from uuid import UUID
-from models import ListEntry, ListCreate, ListUpdate, ListRead, UserList, User
+from models import ListEntry, ListCreate, ListUpdate, ListRead, UserList, User, ListEntryRead, Game
 from database import AsyncSession, get_session
 from dependencies import get_current_user
 
@@ -153,3 +153,30 @@ async def delete_list(
     await session.commit()
     
     return
+
+
+
+@router.post("/{list_id}/games/{game_id}", response_model=ListEntryRead, status_code=status.HTTP_201_CREATED)
+async def add_game(
+    list_id: UUID,
+    game_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    list_stmt = select(UserList).where(
+        UserList.id == list_id,
+        UserList.user_id == current_user.id
+    )
+    
+    user_list = (await session.exec(list_stmt)).one_or_none()
+    
+    if not user_list:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="List not found"
+        )
+        
+    game = await session.get(Game, game_id) # check if game is in local database first (reducing dependency on igdb)
+    
+    if not game:    # if not in local database, check igdb
+        igdb_game = await #TODO function to search igdb with game_id
