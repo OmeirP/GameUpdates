@@ -211,3 +211,47 @@ async def add_game(
         )
     
     return entry
+
+
+
+
+@router.delete("/{list_id}/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_game(
+    list_id: UUID,
+    game_id: int,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    # Find the list, to verify list ownership from the current user
+    list_stmt = select(UserList).where(
+        UserList.id == list_id,    
+        UserList.user_id == current_user.id
+    )
+    
+    list = (await session.exec(list_stmt)).one_or_none()
+    
+    if not list:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="List not found"
+        )
+        
+        
+    # Find the entry to delete
+    entry_stmt = select(ListEntry).where(
+        ListEntry.list_id == list_id,
+        ListEntry.game_id == game_id
+    )
+    
+    entry = (await session.exec(entry_stmt)).one_or_none()
+    
+    if not entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Game not found in list"
+        )
+        
+    await session.delete(entry)
+    await session.commit()
+    
+    return
