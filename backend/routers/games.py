@@ -4,11 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 from models import Game
+from igdb import execute_query
 
 
-
-client_id = os.getenv("CLIENT_ID")
-client_secret = os.getenv("CLIENT_SECRET")
 
 
 router = APIRouter(
@@ -18,6 +16,8 @@ router = APIRouter(
 
 
 
+"""
+Too tightly coupled with the request
 async def query_igdb(request: Request, query):  # request is a Starlette thing. Wrapper for 'scope'? Maybe Look more into it. Needed for client/twitch token stuff
     
     headers = {
@@ -37,7 +37,7 @@ async def query_igdb(request: Request, query):  # request is a Starlette thing. 
             game["cover_url"] = game["cover"]   # Set the cover url to what was gotten, the class_method corrects it
 
     return [Game.model_validate(game) for game in data]
-
+"""
 
 
 
@@ -47,7 +47,7 @@ async def get_upcoming(request: Request):
     
     query = f"fields id, name, first_release_date, cover.url; limit 50; where first_release_date >= {int(datetime.now().timestamp())}; sort first_release_date asc;"
 
-    return await query_igdb(request, query)
+    return await execute_query(request.app.state.http_client, request.app.state.twitch_token, query)    # Maybe switch out for depends if needed
 
 
 
@@ -56,7 +56,7 @@ async def get_top_rated_year(request: Request):
     
     query = f"fields id, name, cover.url; limit 30; where total_rating_count >= 50 & first_release_date >= {int(datetime(datetime.now().year, 1, 1).timestamp())} & first_release_date <= {int(datetime.now().timestamp())}; sort total_rating desc;"
     
-    return await query_igdb(request, query)
+    return await execute_query(request.app.state.http_client, request.app.state.twitch_token, query)
 
 
 # igdb search
@@ -65,4 +65,4 @@ async def search_games(request: Request, q: str):
     
     query = f"search \"{q}\"; fields id, name, cover.url; limit 25;"
     
-    return await query_igdb(request, query)
+    return await execute_query(request.app.state.http_client, request.app.state.twitch_token, query)
