@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlmodel import select, delete
 from sqlalchemy.exc import IntegrityError
 from uuid import UUID
 from models import ListEntry, ListCreate, ListUpdate, ListRead, UserList, User, ListEntryRead, Game
 from database import AsyncSession, get_session
 from dependencies import get_current_user
+from igdb import fetch_game_by_id
 
 router = APIRouter(
     prefix="/lists",
@@ -158,6 +159,7 @@ async def delete_list(
 
 @router.post("/{list_id}/games/{game_id}", response_model=ListEntryRead, status_code=status.HTTP_201_CREATED)
 async def add_game(
+    request: Request,   # Needs this for the http client and token to contact igdb
     list_id: UUID,
     game_id: int,
     current_user: User = Depends(get_current_user),
@@ -179,4 +181,33 @@ async def add_game(
     game = await session.get(Game, game_id) # check if game is in local database first (reducing dependency on igdb)
     
     if not game:    # if not in local database, check igdb
-        igdb_game = await #TODO function to search igdb with game_id
+        igdb_game = await fetch_game_by_id(request.app.state.http_client, request.app.state.twitch_token, game_id)
+        
+        if not igdb_game:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Game not found on IGDB."
+            )
+        
+        game = Game(id=igdb_game.id, name=igdb_game.name, cover_url=igdb_game.cover_url)
+        session.add(game)   # game adding gets queued before the entry gets added (below). So foreign key is ok
+    
+    
+    # game should be found at this point
+    
+    entry = ListEntry(list_id=list_id, game_id=game_id)
+    session.add(entry)
+    
+    try:
+        await session.commit()
+        await session.refresh(entry)
+    except IntegrityError:
+        # This is if integrity error is caused by game already added to table or being added twice at the same time. 
+        #! Not if the game is being added from igdb twice at the same time.
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Game already in list"
+        )
+    
+    return entry
