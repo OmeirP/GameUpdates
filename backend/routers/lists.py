@@ -228,7 +228,7 @@ async def remove_game(
         UserList.user_id == current_user.id
     )
     
-    list = (await session.exec(list_stmt)).one_or_none()
+    playlist = (await session.exec(list_stmt)).one_or_none()
     
     if not list:
         raise HTTPException(
@@ -271,7 +271,7 @@ async def get_list_games(
         UserList.user_id == current_user.id
     )
     
-    list = (await session.exec(list_stmt)).one_or_none()
+    playlist = (await session.exec(list_stmt)).one_or_none()
     
     if not list:
         raise HTTPException(
