@@ -124,6 +124,12 @@ class UserRead(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)     # tells pydantic to accept ORM object instances instead of straight dict data i think.
     
+
+class GameRead(BaseModel):
+    game_id: int
+    name: str
+    cover_url: str | None = None
+
     
 class ListRead(BaseModel):
     id: UUID
