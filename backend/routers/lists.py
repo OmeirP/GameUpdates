@@ -189,7 +189,7 @@ async def add_game(
                 detail="Game not found on IGDB."
             )
         
-        game = Game(id=igdb_game.id, name=igdb_game.name, cover_url=igdb_game.cover_url)
+        game = Game(id=igdb_game.id, name=igdb_game.name, cover_url=igdb_game.cover_url)    # ? Might be unnecessary since execute_query return Game objects. Add igdb_game to session straight?
         session.add(game)   # game adding gets queued before the entry gets added (below). So foreign key is ok
     
     
@@ -283,8 +283,7 @@ async def get_list_games(
         select(
             ListEntry.game_id,   # Get these values
             Game.name,
-            Game.cover_url,
-            ListEntry.added_at
+            Game.cover_url
         )
         # join the list_entries and game tables where the ListEntry.game_id matches the Game.id.
         # Join games to list entries instead of other way round because forst item in select was from List_entries. First item determines FROM
