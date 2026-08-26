@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlmodel import select, delete
 from sqlalchemy.exc import IntegrityError
 from uuid import UUID
-from models import ListEntry, ListCreate, ListUpdate, ListRead, UserList, User, ListEntryRead, Game
+from models import ListEntry, ListCreate, ListUpdate, ListRead, UserList, User, ListEntryRead, Game, GameRead
 from database import AsyncSession, get_session
 from dependencies import get_current_user
 from igdb import fetch_game_by_id
@@ -255,3 +255,48 @@ async def remove_game(
     await session.commit()
     
     return
+
+
+
+@router.get("/{list_id}/games", response_model=list[GameRead])
+async def get_list_games(
+    list_id: UUID,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    
+    # check if user owns list
+    list_stmt = select(UserList).where(
+        UserList.id == list_id,
+        UserList.user_id == current_user.id
+    )
+    
+    list = (await session.exec(list_stmt)).one_or_none()
+    
+    if not list:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="List not found"
+        )
+        
+    game_res_stmt = (
+        select(
+            ListEntry.game_id,   # Get these values
+            Game.name,
+            Game.cover_url,
+            ListEntry.added_at
+        )
+        # join the list_entries and game tables where the ListEntry.game_id matches the Game.id.
+        # Join games to list entries instead of other way round because forst item in select was from List_entries. First item determines FROM
+        .join(Game, ListEntry.game_id == Game.id)   
+        .where(ListEntry.list_id == list_id)
+        .order_by(ListEntry.added_at.desc())
+    )
+    
+    
+    game_results = await session.exec(game_res_stmt)
+    
+    # Parse SQL result tuples into python objects. List of GameRead objects
+    list_games = [GameRead(game_id=row.game_id, name=row.name, cover_url=row.cover_url) for row in game_results]
+    
+    return list_games
