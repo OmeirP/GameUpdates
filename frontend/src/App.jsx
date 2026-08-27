@@ -14,9 +14,26 @@ const mockGames = [
 function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [userLists, setUserLists] = useState([]);
   const [isInitialising, setIsInitialising] = useState(true);
 
+  const fetchUserLists = async () => {
+    try {
+      const res = await fetch('http://localhost:8000/lists', {
+        credentials: 'include',
+      });
+      
+      if (res.ok) {
+        const lists = await res.json();
+        setUserLists(lists)
+      }
+    } catch (err) {
+      console.error('Failed to fetch user lists:', err)
+    }
+  };
 
+
+  // rehydrate session
   useEffect(() => {
     const rehydrateSession = async () => {
       try {
@@ -45,9 +62,6 @@ function App() {
     console.log('Logged in user: ', userData);  //Todo
   }
   
-  const handleAddToList = (game, listType) => {
-    console.log(`Adding ${game.name} to list: ${listType}`);
-  }
 
   
   const handleLogout = async () => {
@@ -63,7 +77,49 @@ function App() {
 
     } finally {
       setUser(null);  // Alone, this only updates local react ui state. logout endpoint needed to expire access_token cookie
+      setUserLists([]);
       console.log('Logged out user');
+    }
+  };
+
+
+
+  const handleAddToList = async (game, listName) => {
+    console.log(`Adding ${game.name} to list: ${listName}`);
+
+    // Intercept unauthenticated users, open auth modal
+    if (!user) {
+      setIsAuthOpen(true);
+      return false;
+    }
+
+    const targetList = userLists.find(
+      (l) => l.name == listName
+    );
+
+    if (!targetList) {
+      console.error(`Didn\'t find a list called "${listName}" for this user.`)
+      return false;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8000/user/lists/${targetList.id}/games/${game.id}`,
+        {
+          method: 'POST',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to add game to list, don\'t know why.');
+      }
+
+      return true;
+
+    } catch (err) {
+      console.error('Add to list failed:', err);
+      return false;
     }
   };
 
