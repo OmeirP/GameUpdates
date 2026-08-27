@@ -45,6 +45,7 @@ function App() {
         if (response.ok) {
           const userData = await response.json(); // Load userData given in response body to be used by js
           setUser(userData);
+          await fetchUserLists();   // Fetch lists on reauthentication
         }
 
       } catch (err) {
@@ -57,8 +58,9 @@ function App() {
     rehydrateSession();
   }, []);
 
-  const handleAuthSuccess = (userData) => {
+  const handleAuthSuccess = async (userData) => {
     setUser(userData);
+    await fetchUserLists();   // Fetch lists on reauthentication
     console.log('Logged in user: ', userData);  //Todo
   }
   
