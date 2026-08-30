@@ -230,7 +230,7 @@ async def remove_game(
     
     playlist = (await session.exec(list_stmt)).one_or_none()
     
-    if not list:
+    if not playlist:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="List not found"
