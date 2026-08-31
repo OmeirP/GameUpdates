@@ -157,18 +157,6 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
 
                                         </div>
 
-                                        {/* <button onClick={() => handleMarkPlayed(game)}          OLD
-                                            disabled={gameStatus === 'loading' || gameStatus === 'played'}
-                                            className="ml-2 shrink-0 bg-slate-800 hover:bg-sky-900 text-slate-300 hover:text-white px-3 py-1.5 rounded text-xs font-medium transition">
-                                                
-                                                {gameStatus === 'loading' ? (
-                                                    'Saving...' // Trigger animation here?
-                                                ) : gameStatus === 'played' ? (
-                                                    'Played'    // Tick
-                                                ) : (
-                                                    'Mark as Played'
-                                                )}
-                                        </button> */}
 
                                         <button onClick={() => onAddToList(game, 'custom')}         // TODO, come up with dropdown maybe? For users to pick playlist to add to
                                             className="shrink-0 bg-slate-800 hover:bg-sky-900 text-slate-300 hover:text-white px-3 py-1.5 rounded text-xs font-bold transition">
