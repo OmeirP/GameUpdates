@@ -87,7 +87,6 @@ function App() {
 
 
   const handleAddToList = async (game, listName) => {
-    console.log(`Adding ${game.name} to list: ${listName}`);
 
     // Intercept unauthenticated users, open auth modal
     if (!user) {
@@ -106,7 +105,7 @@ function App() {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/user/lists/${targetList.id}/games/${game.id}`,
+        `http://localhost:8000/lists/${targetList.id}/games/${game.id}`,
         {
           method: 'POST',
           credentials: 'include',
