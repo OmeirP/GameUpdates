@@ -6,7 +6,7 @@ load_dotenv()
 import os
 from database import init_db
 from contextlib import asynccontextmanager
-from routers import games, auth
+from routers import games, auth, lists
 
 
 client_id = os.getenv("CLIENT_ID")
@@ -48,8 +48,10 @@ app.add_middleware(
 )
 
 
-app.include_router(games.router)    # Mount the router
-app.include_router(auth.router)    # Mount the router
+# Mount the routers
+app.include_router(games.router)
+app.include_router(auth.router) 
+app.include_router(lists.router) 
 
 
 

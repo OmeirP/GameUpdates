@@ -1,4 +1,5 @@
 from sqlmodel import SQLModel, Field
+from sqlalchemy import UniqueConstraint
 from pydantic import field_validator, BaseModel, EmailStr, ConfigDict
 from datetime import datetime, timezone
 from uuid import UUID
@@ -15,14 +16,7 @@ class ListType(str, Enum):
     BACKLOG = "to_play"
     WISHLIST = "wishlist"
 
-# Linking table for games and users. Each entry is an entry in a game list.
-class UserGameList(SQLModel, table=True):
-    __tablename__ = "game_list_entries"
-    
-    user_id: UUID = Field(foreign_key="users.id", primary_key=True)
-    game_id: int = Field(foreign_key="games.id", primary_key=True)  # Obv foreign key str relates to the other table
-    list_type: ListType = Field(primary_key=True)   # 3 fields for composite primary. Need to allow same user/game pair across different list types.
-
+DEFAULT_LISTS = ["Played", "Favourites", "Backlog", "Wishlist"]
 
     
 class User(SQLModel, table=True):
@@ -37,34 +31,6 @@ class User(SQLModel, table=True):
     # default_factory needs to be a function pointer/callable. Not an actual calling of a function. Needs to be given something it can call by itself, not the value of something being called.
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
 
-
-# Request schema
-# Need this instead of user so users cant inject values like is_admin=true
-class UserCreate(BaseModel):
-    email: EmailStr
-    username: str
-    password: str
-
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
-
-
-
-# Response schema
-
-# Whitelist safe fields to send back,
-class UserRead(BaseModel):
-    id: UUID
-    email: EmailStr
-    username: str
-    
-    model_config = ConfigDict(from_attributes=True)     # tells pydantic to accept ORM object instances instead of straight dict data i think.
-    
-class AuthResponse(BaseModel):
-    message: str
-    user: UserRead
 
 
 # The class maps to a table, an instance maps to a row.
@@ -85,8 +51,94 @@ class Game(SQLModel, table=True):
         if isinstance(value, dict) and "url" in value:
             raw_url = value["url"]
             
-            if raw_url.startswith("//"):    # // because browsers have the https bit
+            if raw_url.startswith("//"):    # because browsers have the https bit
                 raw_url = f"https:{raw_url}"
                 
             return raw_url.replace("t_thumb", "t_cover_big")    # Returns this when initially fetching from igdb, return line under if fetching from my db.
         return value    # Don't need to do the url replacement, when the url is first fetched, it's transformed then. Already correct when written to db.
+
+
+
+
+# Stores user lists
+# Might need to setup up sqlmodel 'Relationship' to automatically handle nested loading for games associated with a list.
+class UserList(SQLModel, table=True):
+    __tablename__ = "user_lists"
+    
+    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_user_list_name"),)    # Constraint so the same user can't have multiple lists of the same name. Trailing comma for tuple
+    
+    id: UUID = Field(default_factory=uuid6.uuid7, primary_key=True)
+    user_id: UUID = Field(foreign_key="users.id")   # Do alternative to cascade
+    name: str = Field(max_length=100)
+    is_default: bool = Field(default=False) 
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    
+
+
+# Linking table for games and users. Each entry is an entry in a game list. games are linked to lists, not users
+class ListEntry(SQLModel, table=True):
+    __tablename__ = "list_entries"
+    
+    list_id: UUID = Field(foreign_key="user_lists.id", primary_key=True)
+    game_id: int = Field(foreign_key="games.id", primary_key=True, index=True)
+    added_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))    # for list ordering purposes
+
+
+
+
+# Request schema
+# Need this instead of user so users cant inject values like is_admin=true
+class UserCreate(BaseModel):
+    email: EmailStr
+    username: str
+    password: str
+
+
+class ListCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+
+# * May need to change if ever other changeable data (e.g. covers if you make like albums or collapsable)
+class ListUpdate(BaseModel):    
+    name: str = Field(min_length=1, max_length=100)
+
+
+class ListEntryRead(BaseModel):
+    list_id: UUID
+    game_id: int
+    added_at: datetime
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+
+# Response schema
+
+# Whitelist safe fields to send back,
+class UserRead(BaseModel):
+    id: UUID
+    email: EmailStr
+    username: str
+    
+    model_config = ConfigDict(from_attributes=True)     # tells pydantic to accept ORM object instances instead of straight dict data i think.
+    
+
+class GameRead(BaseModel):
+    game_id: int
+    name: str
+    cover_url: str | None = None
+
+    
+class ListRead(BaseModel):
+    id: UUID
+    name: str
+    is_default: bool
+    created_at: datetime
+    
+class AuthResponse(BaseModel):
+    message: str
+    user: UserRead
+
+

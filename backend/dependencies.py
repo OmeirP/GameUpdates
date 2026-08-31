@@ -37,6 +37,12 @@ async def get_current_user(
     statement = select(User).where(User.id == user_id)
     user = (await session.exec(statement)).one_or_none()
     
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account no longer exists"
+        )
+    
     return user
 
 
