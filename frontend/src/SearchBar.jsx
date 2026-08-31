@@ -141,6 +141,7 @@ export default function SearchBar({ onAddToList }) {     // onAddToList will be 
                                             
                                             {/* Expanding tick element */}
                                             <div
+                                                // col-start 1 row-start-1 stacks button and tick on top of each other
                                                 className={`col-start-1 row-start-1 transition-all duration-300 ease-in-out transform origin-center delay-100 ${
                                                     gameStatus === 'played'
                                                     ? 'scale-80 opacity-100'   // when in effect
