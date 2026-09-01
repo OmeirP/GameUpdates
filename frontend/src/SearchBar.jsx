@@ -136,10 +136,10 @@ export default function SearchBar({ onAddToList, userLists=[] }) {     // onAddT
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 relative">
 
                     {/* Mark as Played button setup with transition */}
-                    <div className='grid place-items-center shrink-0 relative'>
+                    <div className='grid place-items-center shrink-0'>
 
                       {/* Mark as played/loading button */}
                       <button
@@ -196,7 +196,7 @@ export default function SearchBar({ onAddToList, userLists=[] }) {     // onAddT
                     {isMenuOpen && (
                       <div className='absolute right-0 top-full mt-1 w-48 bg-slate-950 border border-slate-800 rounded-md shadow-2xl z-50 py-1 divide-y divide-slate-800/60'>
                         
-                        <div className='px-3 py-1.5 text-10px font-semibold tracking-wider text-slate-400 uppercase'>
+                        <div className='px-3 py-1.5 text-10px font-semibold tracking-wider text-slate-400'>
                           Add to List
                         </div>
                         
