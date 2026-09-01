@@ -108,7 +108,7 @@ export default function SearchBar({ onAddToList, userLists=[] }) {     // onAddT
 
       {/* Floating dropdown overlay */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-lg shadow-xl max-h-96 overflow-y-auto z-50 divide-y divide-slate-800/50">   {  /* Divide is for creating borders between child elements, overflow-auto is scrollbars on overflow */}
+        <div className="absolute left-0 right-0 top-full mt-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 rounded-lg shadow-xl max-h-96 overflow-visible z-50 divide-y divide-slate-800/50">   {  /* Divide is for creating borders between child elements, overflow-auto is scrollbars on overflow */}
           {results.length === 0 && !isLoading ? (
             <div className="p-4 text-center text-slate-500 text-sm">No games found</div>
           ) : (
@@ -194,9 +194,9 @@ export default function SearchBar({ onAddToList, userLists=[] }) {     // onAddT
 
                     {/* context menu dropdown */}
                     {isMenuOpen && (
-                      <div className='absolute right-0 top-full mt-1 w-48 bg-slate-950 border border-slate-800 rounded-md shadow-2xl z-50 py-1 divide-y divide-slate-800/60'>
+                      <div className='absolute right-0 top-full mt-1 w-48 bg-[#121b38] border border-sky-800 rounded-md shadow-2xl z-50 py-1 divide-y-2 divide-slate-800/60'>
                         
-                        <div className='px-3 py-1.5 text-10px font-semibold tracking-wider text-slate-400'>
+                        <div className='px-3 py-1.5 text-sm font-semibold tracking-wider text-zinc-500'>
                           Add to List
                         </div>
                         
@@ -209,7 +209,7 @@ export default function SearchBar({ onAddToList, userLists=[] }) {     // onAddT
                               <button
                                 key={list.id}
                                 onClick={() => handleAddToListSelection(game, list)}
-                                className='w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:text-white transition flex items-center justify-between'
+                                className='w-full text-left px-3 py-1.5 text-xs text-slate-400 hover:text-white hover:bg-sky-900 transition flex items-center justify-between border-b border-slate-800/60'
                               >
                                 {list.name}
                               </button>
