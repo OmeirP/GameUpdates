@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 from sqlmodel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.pool import StaticPool
 
 
 os.environ.setdefault("JWT_SECRET_KEY", "test-jwt-key")
@@ -18,7 +19,7 @@ os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 
 
 from main import app
-from database import get_session    # overrides the database_url i think??
+from database import get_session    # overrides the database_url
 from models import User
 from security import hash_password
 
@@ -30,7 +31,9 @@ test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, connect_args={"
 TestAsyncSession = sessionmaker(
     test_engine,
     class_=AsyncSession,
-    expire_on_commit=False
+    expire_on_commit=False,
+    # For in-memory database, new databases are created for each distinct connection, static pool sets it to maintain a single persistent connection
+    poolclass=StaticPool,   # tests are run sequentially so max one connection is fine
 )
 
 # scope function means the lifecycle of this fixture runs once for each test func that uses it
@@ -39,7 +42,9 @@ async def db_session():
     """Make tables for each test and drop them after"""
 
     # Making tables
-    async with test_engine_begin() as conn:
+    # Without StaticPool, async with would return the connection to a pool that resets it
+    # with StaticPool, instead of queue of multiple connections, it is a pool of one connection that is never closed or reset.
+    async with test_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)   # sqlalchemy model and metadata operations are synchronous, since using an async engine, run_sync lets synch func run in async context
 
     # Provide session
