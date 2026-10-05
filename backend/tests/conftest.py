@@ -83,4 +83,4 @@ async def authenticated_client(client: AsyncClient, db_session: AsyncSession):
     }
     response = await client.post("/auth/signup", json=signup_data)
     assert response.status_code == 201
-    return client
+    yield client
