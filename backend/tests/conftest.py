@@ -26,14 +26,18 @@ from security import hash_password
 TEST_DATABASE_URL = os.environ["DATABASE_URL"]
 
 # check_same_thread should be false, because sqlite is in-memory. aiosqlite spawns threads, would trigger python safety checks if true
-test_engine = create_async_engine(TEST_DATABASE_URL, echo=False, connect_args={"check_same_thread": False})
+test_engine = create_async_engine(
+    TEST_DATABASE_URL,
+    echo=False,
+    connect_args={"check_same_thread": False},
+    # For in-memory database, new databases are created for each distinct connection, static pool sets it to maintain a single persistent connection
+    poolclass=StaticPool   # tests are run sequentially so max one connection is fine
+)
 
 TestAsyncSession = sessionmaker(
     test_engine,
     class_=AsyncSession,
-    expire_on_commit=False,
-    # For in-memory database, new databases are created for each distinct connection, static pool sets it to maintain a single persistent connection
-    poolclass=StaticPool,   # tests are run sequentially so max one connection is fine
+    expire_on_commit=False
 )
 
 # scope function means the lifecycle of this fixture runs once for each test func that uses it
