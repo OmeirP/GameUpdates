@@ -48,3 +48,48 @@ async def test_signup_success(client: AsyncClient, db_session: AsyncSession):
     assert created_list_names == set(DEFAULT_LISTS)
 
 
+@pytest.mark.asyncio
+async def test_signup_duplicates(client: AsyncClient):
+    """Test signup fail if email or username already taken"""
+
+    # test details
+    payload = {
+        "email": "dupetest@example.com",
+        "username": "duperman",
+        "password": "password"
+    }
+    first_resp = await client.post("/auth/signup", json=payload)
+    assert first_resp.status_code == 201
+
+    # send same test details
+    dupe_resp = await client.post("/auth/signup", json=payload)
+    assert dupe_resp.status_code == 409
+    assert "already exists" in dupe_resp.json()["detail"]
+
+
+    # same email, new username
+    dupe_email_payload = {
+        "email": "dupetest@example.com",
+        "username": "originaljoe",
+        "password": "password"
+    }
+    dupe_email_resp = await client.post("/auth/signup", json=dupe_email_payload)
+    assert dupe_email_resp == 409
+    assert "already exists" in dupe_resp.json()["detail"]
+
+
+    # same username, new email
+    dupe_user_payload = {
+        "email": "originalmail@example.com",
+        "username": "duperman",
+        "password": "password"
+    
+    }
+    dupe_user_resp = await client.post("/auth/signup", json=dupe_user_payload)
+    assert dupe_user_resp == 409
+    assert "already exists" in dupe_resp.json()["detail"]
+
+
+
+
+    
