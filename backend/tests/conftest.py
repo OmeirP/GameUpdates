@@ -81,6 +81,7 @@ async def authenticated_client(client: AsyncClient, db_session: AsyncSession):
     """An AsyncClient with an authenticated test user.
     httpx keeps cookies across requests"""
     
+    # The data the client/frontend would send to the endpoint
     signup_data = {
         "email": "testboy@example.com",
         "username": "testuser",
