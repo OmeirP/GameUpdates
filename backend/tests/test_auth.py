@@ -90,6 +90,32 @@ async def test_signup_duplicates(client: AsyncClient):
     assert "already exists" in dupe_resp.json()["detail"]
 
 
+@pytest.mark.asyncio
+async def test_login_success(client: AsyncClient):
+    """test loging in with valid credentials"""
+
+    # signup a new user to login with after
+    signup_payload = {
+        "email": "loginuser@example.com",
+        "username": "loginuser",
+        "password": "password"
+    }
+    await client.post("/auth/signup", json=payload)
+
+    # clear cookies for fresh session
+    client.cookies.clear()
+
+    login_payload = {
+        "email": "loginuser@example.com",
+        "password": "password"
+    }
+    response = await client.post("/auth/login", json=login_payload)
+    
+    assert response.status_code == 200
+    assert response.json()["message"] == "Logged in successfully"
+    assert "access_token" in client.cookies
+
+
 
 
     
