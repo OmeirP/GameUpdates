@@ -92,7 +92,7 @@ async def test_signup_duplicates(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_login_success(client: AsyncClient):
-    """test loging in with valid credentials"""
+    """test logging in with valid credentials"""
 
     # signup a new user to login with after
     signup_payload = {
@@ -114,6 +114,45 @@ async def test_login_success(client: AsyncClient):
     assert response.status_code == 200
     assert response.json()["message"] == "Logged in successfully"
     assert "access_token" in client.cookies
+
+
+@pytest.mark.asyncio
+async def test_login_invalid_cred(client: AsyncClient):
+    """Test login with wrong password and unknown email"""
+
+    # signup a new user to login with after
+    signup_payload = {
+        "email": "loginuser@example.com",
+        "username": "loginuser",
+        "password": "password"
+    }
+    await client.post("/auth/signup", json=payload)
+
+    client.cookies.clear()
+    
+    bad_pw_payload = {
+        "email": "loginuser@example.com",
+        "password": "nopass"
+    }
+    bad_pw_resp = await client.post("/auth/login", json=bad_pw_payload)
+
+    assert bad_pw_resp.status_code == 401
+    assert bad_pw_resp.json()["detail"] == "Incorrect email or password"
+
+
+    bad_email_payload = {
+        "email": "nouser@example.com",
+        "password": "password"
+    }
+    bad_email_resp = await client.post("/auth/login", json=bad_email_payload)
+
+    assert bad_email_resp.status_code == 401
+    assert bad_pw_resp.json()["detail"] == "Incorrect email or password"
+
+
+
+
+
 
 
 
