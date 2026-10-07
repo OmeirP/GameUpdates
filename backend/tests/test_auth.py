@@ -86,7 +86,7 @@ async def test_signup_duplicates(client: AsyncClient):
     
     }
     dupe_user_resp = await client.post("/auth/signup", json=dupe_user_payload)
-    assert dupe_user_resp == 409
+    assert dupe_user_resp.status_code == 409
     assert "already exists" in dupe_resp.json()["detail"]
 
 
