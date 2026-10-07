@@ -100,7 +100,7 @@ async def test_login_success(client: AsyncClient):
         "username": "loginuser",
         "password": "password"
     }
-    await client.post("/auth/signup", json=payload)
+    await client.post("/auth/signup", json=signup_payload)
 
     # clear cookies for fresh session
     client.cookies.clear()
@@ -126,7 +126,7 @@ async def test_login_invalid_cred(client: AsyncClient):
         "username": "loginuser",
         "password": "password"
     }
-    await client.post("/auth/signup", json=payload)
+    await client.post("/auth/signup", json=signup_payload)
 
     client.cookies.clear()
     
@@ -151,6 +151,18 @@ async def test_login_invalid_cred(client: AsyncClient):
 
 
 
+@pytest.mark.asyncio
+async def test_get_me(authenticated_client: AsyncClient):
+    """Test /auth/me returns user when logged in"""
+    
+    response = await authenticated_client.get("/auth/me")
+    assert response.status_code == 200
+    
+    data = response.json()
+    assert data["username"] == "testuser"   # As assigned in authenticated client
+    assert data["email"] == "testboy@example.com"
+    user_id_str = data["id"]
+    assert UUID(user_id_str) # check if valid UUID given
 
 
 
