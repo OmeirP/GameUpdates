@@ -12,7 +12,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.pool import StaticPool
 
 
-os.environ.setdefault("JWT_SECRET_KEY", "test-jwt-key")
+os.environ.setdefault("JWT_SECRET_KEY", "test-jwt-key12345678910111213141")
 os.environ.setdefault("CLIENT_ID", "test-client-id")
 os.environ.setdefault("CLIENT_SECRET", "test-client-secret")
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
