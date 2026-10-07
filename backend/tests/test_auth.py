@@ -166,7 +166,13 @@ async def test_get_me(authenticated_client: AsyncClient):
 
 
 
-
+@pytest.mark.asyncio
+async def test_get_me_unauth(client: AsyncClient):
+    """Test /auth/me gives 401 Unauthorized when not logged in"""
+    
+    response = await client.get("/auth/me")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not logged in"
 
 
     
