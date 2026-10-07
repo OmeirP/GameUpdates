@@ -74,7 +74,10 @@ async def client(db_session: AsyncSession): # Dependency injection handled by py
     app.state.twitch_token = "mock-twitch-token"
 
     transport = ASGITransport(app=app)  # Replaces need for live web server/binding to local port. Intercepts requests and passes straight to app as asgi events 
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:  # client configured to send async http reqs through ASGITransport in memory. dummy url
+    
+    # client configured to send async http reqs through ASGITransport in memory.
+    # Test url given must be https because cookie should be sent in secure context. localhost is special secure context but test url isnt localhost so https needed
+    async with AsyncClient(transport=transport, base_url="https://test") as ac:  
         yield ac
 
     app.dependency_overrides.clear()    # does this after yielding and calling function finishes
