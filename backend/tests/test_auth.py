@@ -175,4 +175,20 @@ async def test_get_me_unauth(client: AsyncClient):
     assert response.json()["detail"] == "Not logged in"
 
 
+
+@pytest.mark.asyncio
+async def test_logout(authenticated_client: AsyncClient):
+    """Test logging out clears auth cookie and invalidates session"""
+
+    logout_resp = await authenticated_client.post("/auth/logout")
+    assert logout_resp.status_code == 200
+    assert logout_resp.json()["message"] == "Logged out successfully"
+
+    # Check if actually logged out by checking response to /auth/me req
+    me_resp = await authenticated_client.get("/auth/me")
+    assert me_resp.status_code == 401
+    assert me_resp.json()["detail"] == "Not logged in"
+
+    # Don't need to worry about ui refresh for test since no ui.
+
     
