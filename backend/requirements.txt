@@ -10,3 +10,4 @@ uuid6
 pytest
 pytest-asyncio
 aiosqlite
+greenlet
