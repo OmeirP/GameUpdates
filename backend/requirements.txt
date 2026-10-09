@@ -6,3 +6,7 @@ argon2-cffi
 pyjwt
 python-multipart
 uuid6
+
+pytest
+pytest-asyncio
+aiosqlite

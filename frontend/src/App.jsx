@@ -133,7 +133,7 @@ function App() {
         {/* Placeholder to keep search centered with  */}
         <div className="w-32 hidden sm:block" />
 
-        <SearchBar onAddToList={handleAddToList} />
+        <SearchBar onAddToList={handleAddToList} userLists={userLists} />
         
         {/* User account name/button */}
         <div className='w-32 flex justify-end'>

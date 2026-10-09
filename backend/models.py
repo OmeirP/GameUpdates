@@ -29,7 +29,7 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, index=True)
     hashed_password: str
     # default_factory needs to be a function pointer/callable. Not an actual calling of a function. Needs to be given something it can call by itself, not the value of something being called.
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 
@@ -71,7 +71,7 @@ class UserList(SQLModel, table=True):
     user_id: UUID = Field(foreign_key="users.id")   # Do alternative to cascade
     name: str = Field(max_length=100)
     is_default: bool = Field(default=False) 
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     
 
 
@@ -81,7 +81,7 @@ class ListEntry(SQLModel, table=True):
     
     list_id: UUID = Field(foreign_key="user_lists.id", primary_key=True)
     game_id: int = Field(foreign_key="games.id", primary_key=True, index=True)
-    added_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc).replace(tzinfo=None))    # for list ordering purposes
+    added_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))    # for list ordering purposes
 
 
 
