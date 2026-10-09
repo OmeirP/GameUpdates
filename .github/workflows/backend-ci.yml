@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
   
   env:
-    CLIENT_ID="ci-dummy-twitch-client-id"
-    CLIENT_SECRET="ci-dummy-twitch-client-secret"
-    DATABASE_URL="sqlite+aiosqlite:///:memory:"
-    JWT_SECRET_KEY="ci-test-jwt-secret-key-32-chars-minimum"
+    CLIENT_ID: "ci-dummy-twitch-client-id"
+    CLIENT_SECRET: "ci-dummy-twitch-client-secret"
+    DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+    JWT_SECRET_KEY: "ci-test-jwt-secret-key-32-chars-minimum"
 
   steps:
     # download rep
